@@ -72,7 +72,7 @@ app.get('/thoughts/:id', (req, res) => {
 
 // Create a new message
 app.post('/thoughts', (req, res) => {
-  const { message, tags } = req.body
+  const { message } = req.body
 
   // Validation
   if (
@@ -86,12 +86,7 @@ app.post('/thoughts', (req, res) => {
     })
   }
 
-  // Validate manual tags if provided
-  const manualTags = Array.isArray(tags)
-    ? tags.map((tag) => tag.toLowerCase())
-    : []
-
-  const newMessage = thoughtsStore.addThought(message, manualTags)
+  const newMessage = thoughtsStore.addThought(message)
   res.status(201).json(newMessage)
 })
 
@@ -122,11 +117,11 @@ app.post('/thoughts/:id/like', (req, res) => {
   }
 })
 
-// Update existing thoughts with tags
-app.post('/thoughts/update-tags', (req, res) => {
+// Auto-tag all existing thoughts
+app.post('/thoughts/auto-tag', (req, res) => {
   const updatedCount = thoughtsStore.updateExistingThoughtsWithTags()
   res.json({
-    message: `Updated ${updatedCount} thoughts with tags`,
+    message: `Auto-generated tags for ${updatedCount} thoughts`,
     updatedCount: updatedCount
   })
 })

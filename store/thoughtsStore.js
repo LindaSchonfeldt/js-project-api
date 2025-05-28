@@ -267,20 +267,17 @@ class ThoughtsStore {
     return uniqueTags
   }
 
-  addThought(messageText, manualTags = []) {
+  addThought(messageText) {
     const newId =
       Date.now().toString() + Math.random().toString(36).substr(2, 9)
 
     // Auto-identify tags
     const autoTags = this.identifyTags(messageText)
 
-    // Combine manual tags with auto-identified tags
-    const allTags = [...new Set([...autoTags, ...manualTags])] // Remove duplicates
-
     const newMessage = {
       _id: newId,
       message: messageText.trim(),
-      tags: allTags,
+      tags: autoTags,
       hearts: 0,
       createdAt: new Date().toISOString(),
       __v: 0
@@ -354,21 +351,26 @@ class ThoughtsStore {
     return results
   }
 
+  // Method to update existing thoughts with tags
   updateExistingThoughtsWithTags() {
-    console.log('Updating existing thoughts with tags...')
+    console.log('Auto-generating tags for existing thoughts...')
 
     let updatedCount = 0
     this.messages.forEach((message) => {
       if (!message.tags) {
-        // Generate tags for this message
+        // Generate tags automatically based on message content
         message.tags = this.identifyTags(message.message)
         updatedCount++
+        console.log(
+          `Tagged "${message.message.substring(0, 30)}..." with:`,
+          message.tags
+        )
       }
     })
 
     if (updatedCount > 0) {
       this.saveData()
-      console.log(`Updated ${updatedCount} thoughts with tags`)
+      console.log(`✅ Auto-tagged ${updatedCount} thoughts`)
     }
 
     return updatedCount
