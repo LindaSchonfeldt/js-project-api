@@ -13,6 +13,10 @@ const app = express()
 // Add middlewares to enable cors and json body parsing
 app.use(cors())
 app.use(express.json())
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store')
+  next()
+})
 
 // API documentation
 app.get('/', (req, res) => {
@@ -68,7 +72,7 @@ app.get('/thoughts/:id', (req, res) => {
 
 // Create a new message
 app.post('/thoughts', (req, res) => {
-  const { message } = req.body
+  const { message, tags } = req.body
 
   // Validation
   if (
@@ -82,8 +86,30 @@ app.post('/thoughts', (req, res) => {
     })
   }
 
-  const newMessage = thoughtsStore.addThought(message)
+  // Validate manual tags if provided
+  const manualTags = Array.isArray(tags)
+    ? tags.map((tag) => tag.toLowerCase())
+    : []
+
+  const newMessage = thoughtsStore.addThought(message, manualTags)
   res.status(201).json(newMessage)
+})
+
+// Get thoughts by tag
+app.get('/thoughts/tag/:tag', (req, res) => {
+  const tag = req.params.tag.toLowerCase()
+  const thoughts = thoughtsStore.getThoughtsByTag(tag)
+  res.json(thoughts)
+})
+
+// Get all available tags
+app.get('/tags', (req, res) => {
+  const tags = thoughtsStore.getAllTags()
+  res.json(tags)
+})
+app.get('/thoughts/tags', (req, res) => {
+  const tags = thoughtsStore.getAllTags()
+  res.json(tags)
 })
 
 // Increment hearts count
@@ -94,6 +120,15 @@ app.post('/thoughts/:id/like', (req, res) => {
   } else {
     res.status(404).send({ error: 'Thought not found' })
   }
+})
+
+// Update existing thoughts with tags
+app.post('/thoughts/update-tags', (req, res) => {
+  const updatedCount = thoughtsStore.updateExistingThoughtsWithTags()
+  res.json({
+    message: `Updated ${updatedCount} thoughts with tags`,
+    updatedCount: updatedCount
+  })
 })
 
 // Start the server
