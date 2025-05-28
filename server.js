@@ -1,20 +1,20 @@
 import cors from 'cors'
 import express from 'express'
 import listEndpoints from 'express-list-endpoints'
-import fs from 'fs'
+import ThoughtsStore from './store/thoughtsStore.js'
 
-const thoughtsData = JSON.parse(fs.readFileSync('./data/thoughts.json', 'utf8'))
+// Initialize the store
+const thoughtsStore = new ThoughtsStore()
 
-// Defines the port the app will run on. Defaults to 8080, but can be overridden
+// Defines the port the app will run on
 const port = process.env.PORT || 8080
 const app = express()
-let messages = thoughtsData
 
 // Add middlewares to enable cors and json body parsing
 app.use(cors())
 app.use(express.json())
 
-// Get API documentation
+// API documentation
 app.get('/', (req, res) => {
   const endpoints = listEndpoints(app)
   res.send({
@@ -25,19 +25,40 @@ app.get('/', (req, res) => {
 
 // Return all messages
 app.get('/thoughts', (req, res) => {
-  res.json(messages)
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 10
+
+  console.log('Page:', page)
+  console.log('Limit:', limit)
+  console.log('Query params:', req.query)
+
+  const paginatedThoughts = thoughtsStore.getPaginatedThoughts(page, limit)
+
+  console.log(
+    'Returned thoughts count:',
+    paginatedThoughts.thoughts
+      ? paginatedThoughts.thoughts.length
+      : paginatedThoughts.length
+  )
+
+  res.json(paginatedThoughts)
 })
 
 // Get messages sorted by hearts
 app.get('/thoughts/trending', (req, res) => {
-  const sortedMessages = [...messages].sort((a, b) => b.hearts - a.hearts)
-  res.json(sortedMessages)
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 10
+
+  const allTrending = thoughtsStore.getTrendingThoughts()
+  const startIndex = (page - 1) * limit
+  const endIndex = startIndex + limit
+
+  res.json(allTrending.slice(startIndex, endIndex))
 })
 
 // Get a specific message
 app.get('/thoughts/:id', (req, res) => {
-  const id = req.params.id
-  const message = messages.find((message) => message._id === id)
+  const message = thoughtsStore.getThoughtById(req.params.id)
   if (message) {
     res.json(message)
   } else {
@@ -46,10 +67,34 @@ app.get('/thoughts/:id', (req, res) => {
 })
 
 // Create a new message
-app.post('/thoughts', (req, res) => {})
+app.post('/thoughts', (req, res) => {
+  const { message } = req.body
+
+  // Validation
+  if (
+    !message ||
+    typeof message !== 'string' ||
+    message.length < 5 ||
+    message.length > 140
+  ) {
+    return res.status(400).send({
+      error: 'Message must be a string between 5 and 140 characters long'
+    })
+  }
+
+  const newMessage = thoughtsStore.addThought(message)
+  res.status(201).json(newMessage)
+})
 
 // Increment hearts count
-app.post('/thoughts/:id/like', (req, res) => {})
+app.post('/thoughts/:id/like', (req, res) => {
+  const message = thoughtsStore.likeThought(req.params.id)
+  if (message) {
+    res.json(message)
+  } else {
+    res.status(404).send({ error: 'Thought not found' })
+  }
+})
 
 // Start the server
 app.listen(port, () => {
