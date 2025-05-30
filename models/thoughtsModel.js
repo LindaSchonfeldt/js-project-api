@@ -1,6 +1,34 @@
+/**
+ * THOUGHTS MODEL (Data Access Layer)
+ *
+ * Data Storage and Retrieval for Happy Thoughts API
+ *
+ * This model handles all data operations including file I/O, data validation,
+ * and the intelligent auto-tagging system. Currently uses JSON file storage
+ * but designed for easy migration to MongoDB/database.
+ *
+ * Responsibilities:
+ * - Load and save data to/from JSON file
+ * - Perform CRUD operations on thoughts
+ * - Auto-generate tags using keyword and emoji analysis
+ * - Handle data structure validation
+ * - Manage data persistence and caching
+ * - Provide search and filtering capabilities
+ *
+ * Features:
+ * - Automatic tag generation (10+ categories)
+ * - Keyword matching with plural/verb forms
+ * - Emoji pattern recognition
+ * - Pagination support
+ * - Data integrity validation
+ *
+ * Architecture: Service → Model → Data Storage
+ *
+ */
+
 import fs from 'fs'
 
-class ThoughtsStore {
+class ThoughtsModel {
   constructor(filePath = './data/thoughts.json') {
     this.filePath = filePath
     this.messages = this.loadData()
@@ -377,4 +405,4 @@ class ThoughtsStore {
   }
 }
 
-export default ThoughtsStore
+export default ThoughtsModel
