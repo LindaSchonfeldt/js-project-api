@@ -19,18 +19,16 @@
 
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 
-const thoughtsModel = new ThoughtsModel()
+// Choose storage type based on environment
+const useDatabase = process.env.USE_DATABASE === 'true' || false
+const thoughtsModel = new ThoughtsModel(useDatabase)
 
-export const getPaginatedThoughts = async (page, limit) => {
-  return thoughtsModel.getPaginatedThoughts(page, limit)
+export const createThought = async (message) => {
+  return thoughtsModel.createThought(message)
 }
 
 export const getThoughtById = async (id) => {
   return thoughtsModel.getThoughtById(id)
-}
-
-export const createThought = async (message) => {
-  return thoughtsModel.createThought(message)
 }
 
 export const likeThought = async (id) => {
@@ -51,4 +49,8 @@ export const getAllTags = async () => {
 
 export const updateExistingThoughtsWithTags = async () => {
   return thoughtsModel.updateExistingThoughtsWithTags()
+}
+
+export const getPaginatedThoughts = async (page, limit) => {
+  return thoughtsModel.getPaginatedThoughts(page, limit)
 }

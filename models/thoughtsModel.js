@@ -27,11 +27,16 @@
  */
 
 import fs from 'fs'
+import Thought from './Thought'
 
-class ThoughtsModel {
-  constructor(filePath = './data/thoughts.json') {
+export class ThoughtsModel {
+  constructor(useDatabase = false, filePath = './data/thoughts.json') {
+    this.useDatabase = useDatabase
     this.filePath = filePath
-    this.messages = this.loadData()
+
+    if (!useDatabase) {
+      this.messages = this.loadData()
+    }
   }
 
   loadData() {
@@ -60,11 +65,8 @@ class ThoughtsModel {
           typeof message.hearts === 'number'
       )
 
-      console.log('Filtered length:', filtered.length)
-      console.log('First few entries:', filtered.slice(0, 3))
       return filtered // Return at the end
     } catch (error) {
-      console.error('Error loading thoughts data:', error)
       return []
     }
   }

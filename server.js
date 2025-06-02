@@ -28,6 +28,7 @@ import express from 'express'
 import listEndpoints from 'express-list-endpoints'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
 import tagsRoutes from './routes/tagsRoutes.js'
+import mongoose from 'mongoose'
 
 // Defines the port the app will run on
 const port = process.env.PORT || 8080
@@ -39,6 +40,22 @@ app.use(express.json())
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store')
   next()
+})
+// Create middleware for error handling
+app.use((req, res, next) => {
+  if (mongoose.connection.readyState === 1) {
+    next()
+  } else {
+    res.status(503).json({ Error: 'Service Unavailable' })
+  }
+})
+
+// Database connection
+const mongoURL =
+  process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
+mongoose.connect(mongoURL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
 
 // Routes
