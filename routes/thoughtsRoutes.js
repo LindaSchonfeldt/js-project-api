@@ -15,13 +15,13 @@
  * - POST   /thoughts           - Create new thought (auto-tagged)
  * - POST   /thoughts/:id/like  - Increment hearts count
  * - POST   /thoughts/auto-tag  - Auto-tag existing thoughts
- * - DELETE /thoughts/:id       - Delete thought by ID
  *
  * Architecture: HTTP Request → Routes → Controller
  *
  */
 
 import express from 'express'
+
 import * as thoughtsController from '../controllers/thoughtsController.js'
 
 const router = express.Router()
@@ -29,9 +29,9 @@ const router = express.Router()
 router.get('/', thoughtsController.getAllThoughts)
 router.get('/trending', thoughtsController.getTrendingThoughts)
 router.get('/tag/:tag', thoughtsController.getThoughtsByTag)
+router.post('/auto-tag', thoughtsController.autoTagThoughts)
 router.get('/:id', thoughtsController.getThoughtById)
 router.post('/', thoughtsController.createThought)
 router.post('/:id/like', thoughtsController.likeThought)
-router.post('/auto-tag', thoughtsController.autoTagThoughts)
 
 export default router

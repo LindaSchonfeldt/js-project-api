@@ -13,7 +13,11 @@
  * - Handle complex validation logic
  * - Manage external API integrations (future)
  *
- * Architecture: Controller → Service → Model
+ * Architecture: MVC Pattern with Service Layer
+ * - Routes: URL mapping and route definitions
+ * - Controllers: HTTP request/response handling
+ * - Services: Business logic and data orchestration
+ * - Models: Data access (supports both file and MongoDB storage)
  *
  */
 

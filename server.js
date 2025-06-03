@@ -14,16 +14,21 @@
  * - 🏷️ Smart categorization into 10+ categories
  * - 📊 Trending system based on popularity
  * - 🔍 Tag-based filtering and search
+ * - 💾 MongoDB integration for scalable data storage
  *
- * Architecture: MVC Pattern
+ * Architecture: MVC Pattern with Service Layer
  * - Routes: URL mapping and route definitions
  * - Controllers: HTTP request/response handling
  * - Services: Business logic and data orchestration
- * - Models: Data access and storage operations
+ * - Models: Data access (supports both file and MongoDB storage)
  *
+ * @author Linda Schönfeldt
+ * @version 1.0.0
+ * @created June 2025
  */
 
 import dotenv from 'dotenv'
+
 dotenv.config() // Load environment variables
 
 import cors from 'cors'
