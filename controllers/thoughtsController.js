@@ -63,7 +63,7 @@ export const getAllThoughts = async (req, res, next) => {
   }
 }
 
-export const getThoughtById = async (req, res) => {
+export const getThoughtById = async (req, res, next) => {
   const { id } = req.params
   try {
     const thought = await thoughtsService.getThoughtById(id)
@@ -129,6 +129,45 @@ export const likeThought = async (req, res, next) => {
     })
   } catch (error) {
     next(error) // Let the error middleware handle it
+  }
+}
+
+export const updateThought = async (req, res, next) => {
+  // Add next parameter
+  try {
+    const { message } = req.body
+    const { id } = req.params
+
+    // Validation is correct
+    if (!message || typeof message !== 'string') {
+      throw new ValidationError('Message is required and must be a string')
+    }
+
+    if (message.length < 5 || message.length > 140) {
+      throw new ValidationError(
+        'Message must be between 5 and 140 characters',
+        {
+          field: 'message',
+          current: message.length,
+          min: 5,
+          max: 140
+        }
+      )
+    }
+
+    const updatedThought = await thoughtsService.updateThought(id, message)
+
+    if (!updatedThought) {
+      throw new NotFoundError('Thought')
+    }
+
+    res.status(200).json({
+      success: true,
+      response: updatedThought,
+      message: 'Thought was successfully updated'
+    })
+  } catch (error) {
+    next(error)
   }
 }
 

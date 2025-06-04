@@ -39,6 +39,14 @@ export const likeThought = async (id) => {
   return thoughtsModel.likeThought(id)
 }
 
+export const updateThought = async (id, message) => {
+  return thoughtsModel.updateThought(id, message)
+}
+
+export const deleteThought = async (id) => {
+  return thoughtsModel.deleteThought(id)
+}
+
 export const getTrendingThoughts = async () => {
   return thoughtsModel.getTrendingThoughts()
 }

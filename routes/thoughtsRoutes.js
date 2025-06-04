@@ -32,6 +32,8 @@ router.get('/trending', thoughtsController.getTrendingThoughts)
 router.get('/tag/:tag', thoughtsController.getThoughtsByTag)
 router.post('/auto-tag', thoughtsController.autoTagThoughts)
 router.get('/:id', thoughtsController.getThoughtById)
+router.delete('/:id', thoughtsController.deleteThought)
 router.post('/:id/like', thoughtsController.likeThought)
+router.put('/:id', thoughtsController.updateThought)
 
 export default router
