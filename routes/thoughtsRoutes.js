@@ -27,11 +27,11 @@ import * as thoughtsController from '../controllers/thoughtsController.js'
 const router = express.Router()
 
 router.get('/', thoughtsController.getAllThoughts)
+router.post('/', thoughtsController.createThought)
 router.get('/trending', thoughtsController.getTrendingThoughts)
 router.get('/tag/:tag', thoughtsController.getThoughtsByTag)
 router.post('/auto-tag', thoughtsController.autoTagThoughts)
 router.get('/:id', thoughtsController.getThoughtById)
-router.post('/', thoughtsController.createThought)
 router.post('/:id/like', thoughtsController.likeThought)
 
 export default router

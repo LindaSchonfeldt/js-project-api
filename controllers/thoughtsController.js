@@ -17,117 +17,198 @@
  * Architecture: Routes → Controller → Service
  *
  */
+/**
+ * Available Endpoints:
+ * - GET    /thoughts           - Get paginated thoughts (getAllThoughts)
+ * - GET    /thoughts/:id       - Get specific thought (getThoughtById)
+ * - POST   /thoughts           - Create new thought (createThought)
+ * - POST   /thoughts/:id/like  - Increment hearts count (likeThought)
+ * - DELETE /thoughts/:id       - Remove thought (deleteThought)
+ * - GET    /thoughts/trending  - Get popular thoughts (getTrendingThoughts)
+ * - GET    /thoughts/tag/:tag  - Get thoughts by tag (getThoughtsByTag)
+ * - GET    /tags               - Get all tags (getAllTags)
+ * - POST   /thoughts/auto-tag  - Tag existing thoughts (autoTagThoughts)
+ */
+/**
+ * Error Handling:
+ * - 400 Bad Request - Invalid input format
+ * - 404 Not Found - Resource doesn't exist
+ * - 500 Server Error - Unexpected errors
+ */
 
 import * as thoughtsService from '../services/thoughtsService.js'
+import { NotFoundError, ValidationError } from '../utils/errors.js'
 
-export const getAllThoughts = async (req, res) => {
+export const getAllThoughts = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
 
+    // Validate pagination parameters
+    if (page < 1) {
+      throw new ValidationError('Page must be at least 1')
+    }
+    if (limit < 1 || limit > 100) {
+      throw new ValidationError('Limit must be between 1 and 100')
+    }
+
     const result = await thoughtsService.getPaginatedThoughts(page, limit)
-    res.json(result)
+    res.status(200).json({
+      success: true,
+      response: result,
+      message: 'All thoughts were successfully fetched'
+    })
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch thoughts' })
+    next(error)
   }
 }
 
 export const getThoughtById = async (req, res) => {
+  const { id } = req.params
   try {
-    const thought = await thoughtsService.getThoughtById(req.params.id)
-    if (thought) {
-      res.json(thought)
-    } else {
-      res.status(404).json({ error: 'Thought not found' })
+    const thought = await thoughtsService.getThoughtById(id)
+    if (!thought) {
+      throw new NotFoundError('Thought not found')
     }
+    res.status(200).json({
+      success: true,
+      response: thought,
+      message: 'Thought was successfully fetched'
+    })
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch thought' })
+    next(error)
   }
 }
 
-export const createThought = async (req, res) => {
+// Example for createThought with validation
+export const createThought = async (req, res, next) => {
   try {
     const { message } = req.body
 
     // Validation
-    if (
-      !message ||
-      typeof message !== 'string' ||
-      message.length < 5 ||
-      message.length > 140
-    ) {
-      return res.status(400).json({ error: 'Invalid message format' })
+    if (!message || typeof message !== 'string') {
+      throw new ValidationError('Message is required and must be a string')
+    }
+
+    if (message.length < 5 || message.length > 140) {
+      throw new ValidationError(
+        'Message must be between 5 and 140 characters',
+        {
+          field: 'message',
+          current: message.length,
+          min: 5,
+          max: 140
+        }
+      )
     }
 
     const newThought = await thoughtsService.createThought(message)
-    res.status(201).json(newThought)
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create thought' })
-  }
-}
-
-export const likeThought = async (req, res) => {
-  try {
-    const thought = await thoughtsService.likeThought(req.params.id)
-    if (thought) {
-      res.json(thought)
-    } else {
-      res.status(404).json({ error: 'Thought not found' })
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to like thought' })
-  }
-}
-
-export const deleteThought = async (req, res) => {
-  try {
-    const thought = await thoughtsService.deleteThought(req.params.id)
-    if (thought) {
-      res.json(thought)
-    } else {
-      res.status(404).json({ error: 'Thought not found' })
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete thought' })
-  }
-}
-
-export const getTrendingThoughts = async (req, res) => {
-  try {
-    const trendingThoughts = await thoughtsService.getTrendingThoughts()
-    res.json(trendingThoughts)
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch trending thoughts' })
-  }
-}
-
-export const getThoughtsByTag = async (req, res) => {
-  try {
-    const tag = req.params.tag.toLowerCase()
-    const thoughts = await thoughtsService.getThoughtsByTag(tag)
-    res.json(thoughts)
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch thoughts by tag' })
-  }
-}
-
-export const getAllTags = async (req, res) => {
-  try {
-    const tags = await thoughtsService.getAllTags()
-    res.json(tags)
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch tags' })
-  }
-}
-
-export const autoTagThoughts = async (req, res) => {
-  try {
-    const updatedCount = await thoughtsService.updateExistingThoughtsWithTags()
-    res.json({
-      message: `Auto-generated tags for ${updatedCount} thoughts`,
-      updatedCount: updatedCount
+    res.status(201).json({
+      success: true,
+      response: newThought,
+      message: 'Thought was successfully created'
     })
   } catch (error) {
-    res.status(500).json({ error: 'Failed to auto-tag thoughts' })
+    next(error)
+  }
+}
+
+export const likeThought = async (req, res, next) => {
+  const { id } = req.params
+  try {
+    const thought = await thoughtsService.likeThought(id)
+
+    if (!thought) {
+      throw new NotFoundError('Thought')
+    }
+
+    res.status(200).json({
+      success: true,
+      response: thought,
+      message: 'Thought was successfully liked'
+    })
+  } catch (error) {
+    next(error) // Let the error middleware handle it
+  }
+}
+
+export const deleteThought = async (req, res, next) => {
+  const { id } = req.params
+  try {
+    const thought = await thoughtsService.deleteThought(id)
+
+    if (!thought) {
+      throw new NotFoundError('Thought')
+    }
+
+    res.status(200).json({
+      success: true,
+      response: thought,
+      message: 'Thought was successfully deleted'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getTrendingThoughts = async (req, res, next) => {
+  try {
+    const trendingThoughts = await thoughtsService.getTrendingThoughts()
+
+    res.status(200).json({
+      success: true,
+      response: trendingThoughts,
+      message: 'Trending thoughts were successfully fetched'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getThoughtsByTag = async (req, res, next) => {
+  try {
+    // Validate tag parameter
+    if (!req.params.tag) {
+      throw new ValidationError('Tag parameter is required')
+    }
+
+    const tag = req.params.tag.toLowerCase()
+    const thoughts = await thoughtsService.getThoughtsByTag(tag)
+
+    res.status(200).json({
+      success: true,
+      response: thoughts,
+      message: `Thoughts with tag "${tag}" were successfully fetched`
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getAllTags = async (req, res, next) => {
+  try {
+    const tags = await thoughtsService.getAllTags()
+
+    res.status(200).json({
+      success: true,
+      response: tags,
+      message: 'Tags were successfully fetched'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const autoTagThoughts = async (req, res, next) => {
+  try {
+    const updatedCount = await thoughtsService.updateExistingThoughtsWithTags()
+
+    res.status(200).json({
+      success: true,
+      response: { updatedCount },
+      message: `Successfully auto-tagged ${updatedCount} thoughts`
+    })
+  } catch (error) {
+    next(error)
   }
 }

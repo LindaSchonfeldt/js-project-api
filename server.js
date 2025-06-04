@@ -37,6 +37,9 @@ import listEndpoints from 'express-list-endpoints'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
 import tagsRoutes from './routes/tagsRoutes.js'
 import mongoose from 'mongoose'
+import Thought from './models/Thought.js'
+import { ThoughtsModel } from './models/thoughtsModel.js'
+import { ApiError } from './utils/errors.js'
 
 // Defines the port the app will run on
 const port = process.env.PORT || 8080
@@ -70,11 +73,45 @@ console.log(
 
 // Connect to MongoDB
 mongoose
-  .connect(mongoURL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  .connect(mongoURL)
+  .then(async () => {
+    console.log('Connected to MongoDB')
+
+    // Check if database is empty
+    const count = await Thought.countDocuments()
+
+    // Auto-migrate if database is empty
+    if (count === 0) {
+      console.log('Empty database detected, migrating data from JSON...')
+
+      try {
+        // Load data from file
+        const thoughtsModel = new ThoughtsModel(false)
+        const thoughts = thoughtsModel.loadData()
+
+        // Transform and enhance with tags
+        const transformedThoughts = thoughts.map((thought) => {
+          const { _id, ...thoughtData } = thought
+
+          // Auto-generate tags if missing
+          if (!thoughtData.tags || !thoughtData.tags.length) {
+            thoughtData.tags = thoughtsModel.identifyTags(thoughtData.message)
+          }
+
+          return thoughtData
+        })
+
+        const result = await Thought.insertMany(transformedThoughts)
+        console.log(
+          `✅ Successfully imported ${result.length} thoughts to MongoDB`
+        )
+      } catch (error) {
+        console.error('Migration failed:', error)
+      }
+    } else {
+      console.log(`Database contains ${count} thoughts, skipping migration`)
+    }
   })
-  .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err))
 
 // Routes
@@ -91,7 +128,44 @@ app.get('/', (req, res) => {
   })
 })
 
-// Start the server
-app.listen(port, () => {
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err)
+
+  if (err instanceof ApiError) {
+    // Our custom API errors have status codes and formatted responses
+    return res.status(err.statusCode).json({
+      success: false,
+      response: err.message,
+      message: err.publicMessage
+    })
+  } else {
+    // Unknown errors
+    return res.status(500).json({
+      success: false,
+      response: process.env.NODE_ENV === 'production' ? null : err.message,
+      message: 'An unexpected error occurred'
+    })
+  }
+})
+
+// 404 middleware for unhandled routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'The requested endpoint does not exist'
+  })
+})
+
+// Start the server with error handling
+const server = app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`)
+})
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${port} is already in use. Try another port.`)
+  } else {
+    console.error('Server error:', error)
+  }
 })

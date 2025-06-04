@@ -27,6 +27,7 @@
  */
 
 import fs from 'fs'
+
 import Thought from './Thought'
 
 export class ThoughtsModel {
@@ -42,12 +43,7 @@ export class ThoughtsModel {
   loadData() {
     try {
       const rawData = fs.readFileSync(this.filePath, 'utf8')
-      console.log('Raw data:', rawData.substring(0, 100) + '...')
-
       const thoughtsData = JSON.parse(rawData)
-      console.log('Parsed data type:', typeof thoughtsData)
-      console.log('Is array:', Array.isArray(thoughtsData))
-      console.log('Data length:', thoughtsData?.length)
 
       // Ensure it's an array
       if (!Array.isArray(thoughtsData)) {
@@ -65,7 +61,7 @@ export class ThoughtsModel {
           typeof message.hearts === 'number'
       )
 
-      return filtered // Return at the end
+      return filtered
     } catch (error) {
       return []
     }

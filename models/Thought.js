@@ -1,13 +1,12 @@
-// models/Thought.js (NEW FILE)
 /**
  * THOUGHT MONGOOSE MODEL
- * 
- * MongoDB/Mongoose schema definition for thoughts
- * 
- * This file defines the data structure and validation rules
- * for thoughts stored in MongoDB database.
- * 
- * Architecture: Service → Model → MongoDB
+ *
+ * MongoDB schema definition for thoughts
+ *
+ * This file defines the data structure for thoughts stored in MongoDB.
+ *
+ * @author Linda Schönfeldt
+ * @created June 2025
  */
 
 import mongoose from 'mongoose'
@@ -20,18 +19,22 @@ const thoughtSchema = new mongoose.Schema({
     maxlength: [140, 'Message cannot exceed 140 characters'],
     trim: true
   },
-  tags: [{
-    type: String,
-    lowercase: true
-  }],
+  tags: [
+    {
+      type: String,
+      lowercase: true
+    }
+  ],
   hearts: {
     type: Number,
     default: 0,
     min: 0
-  }
-}, {
-  timestamps: true,  // Automatically adds createdAt and updatedAt
-  versionKey: '__v'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  __v: Number
 })
 
 // Add indexes for better query performance
