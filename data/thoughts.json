@@ -2,7 +2,7 @@
   {
     "_id": "682f78d4c5e9a20010ab3f01",
     "message": "The best ideas come during morning walks",
-    "hearts": 15,
+    "hearts": 17,
     "createdAt": "2025-05-27T13:45:08.512Z",
     "__v": 0
   },
@@ -697,6 +697,16 @@
     "message": "The first time wearing a sweater when fall arrives 🍁",
     "hearts": 26,
     "createdAt": "2025-05-31T17:45:09.456Z",
+    "__v": 0
+  },
+  {
+    "_id": "1749068994612u8vo4wvz3",
+    "message": "My dog <3",
+    "tags": [
+      "home"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-04T20:29:54.612Z",
     "__v": 0
   }
 ]

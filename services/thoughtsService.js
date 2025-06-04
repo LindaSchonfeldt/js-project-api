@@ -22,12 +22,14 @@
  */
 
 import { ThoughtsModel } from '../models/thoughtsModel.js'
+import Thought from '../models/Thought.js'
 
 // Choose storage type based on environment
 const useDatabase = process.env.USE_DATABASE === 'true' || false
 const thoughtsModel = new ThoughtsModel(useDatabase)
 
 export const createThought = async (message) => {
+  // Method should match what's available in the model
   return thoughtsModel.createThought(message)
 }
 

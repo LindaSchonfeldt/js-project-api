@@ -293,16 +293,16 @@ export class ThoughtsModel {
     return uniqueTags
   }
 
-  addThought(messageText) {
+  createThought(message) {
     const newId =
       Date.now().toString() + Math.random().toString(36).substr(2, 9)
 
     // Auto-identify tags
-    const autoTags = this.identifyTags(messageText)
+    const autoTags = this.identifyTags(message)
 
     const newMessage = {
       _id: newId,
-      message: messageText.trim(),
+      message: message.trim(),
       tags: autoTags,
       hearts: 0,
       createdAt: new Date().toISOString(),

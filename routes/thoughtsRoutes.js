@@ -13,11 +13,15 @@
  * - GET    /thoughts/tag/:tag  - Get thoughts filtered by tag
  * - GET    /thoughts/:id       - Get specific thought by ID
  * - POST   /thoughts           - Create new thought (auto-tagged)
+ * - PUT    /thoughts/:id       - Update an existing thought
+ * - DELETE /thoughts/:id       - Remove a thought
  * - POST   /thoughts/:id/like  - Increment hearts count
  * - POST   /thoughts/auto-tag  - Auto-tag existing thoughts
  *
  * Architecture: HTTP Request → Routes → Controller
  *
+ * @author Linda Schönfeldt
+ * @created June 2025
  */
 
 import express from 'express'
