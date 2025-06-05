@@ -51,10 +51,7 @@ console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
 // Middleware
 app.use(
   cors({
-    origin: [
-      'https://creative-hotteok-2e5655.netlify.app',
-      'http://localhost:3000'
-    ],
+    origin: ['https://creative-hotteok-2e5655.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -85,8 +82,7 @@ app.use((req, res, next) => {
 })
 
 // Database connection - using env
-const mongoURL =
-  process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
+const mongoURL = process.env.MONGO_URL || 'mongodb://localhost/happy-thoughts'
 console.log(
   `Connecting to MongoDB: ${mongoURL.replace(/\/\/(.+)@/, '//***:***@')}`
 ) // Hide credentials in logs
