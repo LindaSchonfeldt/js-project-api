@@ -49,18 +49,38 @@ const app = express()
 console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
 
 // Middleware
-app.use(cors())
+app.use(
+  cors({
+    origin: [
+      'https://creative-hotteok-2e5655.netlify.app',
+      'http://localhost:3000'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 app.use(express.json())
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store')
   next()
 })
-// Create middleware for error handling
+// Create middleware for database state handling
 app.use((req, res, next) => {
+  // If MongoDB is connected, use it
   if (mongoose.connection.readyState === 1) {
+    req.useDatabase = true
     next()
-  } else {
+  }
+  // If we're in production and MongoDB is down, return 503
+  else if (process.env.NODE_ENV === 'production') {
     res.status(503).json({ Error: 'Service Unavailable' })
+  }
+  // In development, fall back to file storage
+  else {
+    console.log('MongoDB not connected, using file storage')
+    req.useDatabase = false
+    next()
   }
 })
 
@@ -157,15 +177,19 @@ app.use((req, res) => {
   })
 })
 
-// Start the server with error handling
-const server = app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`)
-})
+// MongoDB connection with better error handling
+mongoose
+  .connect(mongoURL)
+  .then(() => {
+    console.log('Connected to MongoDB')
 
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.log(`Port ${port} is already in use. Try another port.`)
-  } else {
-    console.error('Server error:', error)
-  }
-})
+    // Only start the server after successful DB connection
+    app.listen(port, () => {
+      console.log(`Server running on http://localhost:${port}`)
+    })
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err)
+    // Don't exit the process - allow API to run in file-based mode
+    console.log('Falling back to file-based storage')
+  })

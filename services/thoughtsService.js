@@ -1,3 +1,6 @@
+import mongoose from 'mongoose'
+
+import Thought from '../models/Thought.js'
 /**
  * THOUGHTS SERVICE
  *
@@ -22,11 +25,13 @@
  */
 
 import { ThoughtsModel } from '../models/thoughtsModel.js'
-import Thought from '../models/Thought.js'
 
 // Choose storage type based on environment
 const useDatabase = process.env.USE_DATABASE === 'true' || false
 const thoughtsModel = new ThoughtsModel(useDatabase)
+
+// Create a thoughts model instance for file-based operations
+const fileThoughtsModel = new ThoughtsModel(false)
 
 export const createThought = async (message) => {
   // Method should match what's available in the model
@@ -35,6 +40,15 @@ export const createThought = async (message) => {
 
 export const getThoughtById = async (id) => {
   return thoughtsModel.getThoughtById(id)
+}
+
+export const getAllThoughts = async (req) => {
+  // Use MongoDB if connected, otherwise use file storage
+  if (mongoose.connection.readyState === 1) {
+    return await Thought.find().sort({ createdAt: -1 })
+  } else {
+    return fileThoughtsModel.getAllThoughts()
+  }
 }
 
 export const likeThought = async (id) => {
