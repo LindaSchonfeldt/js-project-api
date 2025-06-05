@@ -31,6 +31,9 @@ import dotenv from 'dotenv'
 
 dotenv.config() // Load environment variables
 
+const mongoURL =
+  process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
+
 import cors from 'cors'
 import express from 'express'
 import listEndpoints from 'express-list-endpoints'
@@ -80,7 +83,7 @@ app.use((req, res, next) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts')
+  .connect(mongoURL)
   .then(async () => {
     console.log('Connected to MongoDB')
 
