@@ -45,9 +45,6 @@ import { ApiError } from './utils/errors.js'
 const port = process.env.PORT || 8080
 const app = express()
 
-// Log environment
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
-
 // Middleware
 app.use(
   cors({
@@ -81,15 +78,9 @@ app.use((req, res, next) => {
   }
 })
 
-// Database connection - using env
-const mongoURL = process.env.MONGO_URL || 'mongodb://localhost/happy-thoughts'
-console.log(
-  `Connecting to MongoDB: ${mongoURL.replace(/\/\/(.+)@/, '//***:***@')}`
-) // Hide credentials in logs
-
 // Connect to MongoDB
 mongoose
-  .connect(mongoURL)
+  .connect(process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts')
   .then(async () => {
     console.log('Connected to MongoDB')
 
