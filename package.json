@@ -1,7 +1,9 @@
 {
-  "name": "project-api",
+  "name": "js-project-api",
   "version": "1.0.0",
   "description": "Project API",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "babel-node server.js",
     "dev": "nodemon server.js --exec babel-node"

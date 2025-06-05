@@ -28,7 +28,7 @@
 
 import fs from 'fs'
 
-import Thought from './Thought'
+import Thought from './Thought.js'
 
 export class ThoughtsModel {
   constructor(useDatabase = false, filePath = './data/thoughts.json') {
