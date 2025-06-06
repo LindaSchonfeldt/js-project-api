@@ -49,19 +49,16 @@ const port = process.env.PORT || 8080
 const app = express()
 
 // Middleware
-app.use(
-  cors({
-    origin: ['https://creative-hotteok-2e5655.netlify.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-)
-app.use(express.json())
+app.use(express.json()) // Parse JSON request bodies
+
+// Add CORS headers middleware
 app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store')
+  res.header('Access-Control-Allow-Origin', '*') // Allow all origins
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   next()
 })
+
 // Create middleware for database state handling
 app.use((req, res, next) => {
   // If MongoDB is connected, use it
