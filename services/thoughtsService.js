@@ -79,6 +79,22 @@ export const updateExistingThoughtsWithTags = async () => {
   return thoughtsModel.updateExistingThoughtsWithTags()
 }
 
-export const getPaginatedThoughts = async (page, limit) => {
-  return thoughtsModel.getPaginatedThoughts(page, limit)
+export const getPaginatedThoughts = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit
+
+  const thoughts = await Thought.find()
+    .sort({ createdAt: -1 }) // Add this line to sort newest first
+    .skip(skip)
+    .limit(limit)
+
+  const total = await Thought.countDocuments()
+
+  return {
+    thoughts,
+    pagination: {
+      current: page,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  }
 }

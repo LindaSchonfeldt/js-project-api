@@ -1,12 +1,5 @@
 [
   {
-    "_id": "682f78d4c5e9a20010ab3f01",
-    "message": "The best ideas come during morning walks",
-    "hearts": 18,
-    "createdAt": "2025-05-27T13:45:08.512Z",
-    "__v": 0
-  },
-  {
     "_id": "682f79f1c5e9a20010ab3f02",
     "message": "Learning to code is like solving puzzles every day",
     "hearts": 28,
@@ -25,13 +18,6 @@
     "message": "Debugging: being a detective in a crime scene where you're also the murderer 🕵️‍♀️",
     "hearts": 42,
     "createdAt": "2025-05-27T17:31:54.123Z",
-    "__v": 0
-  },
-  {
-    "_id": "682f7b59c5e9a20010ab3f05",
-    "message": "Coffee is just bean soup ☕",
-    "hearts": 7,
-    "createdAt": "2025-05-28T08:12:33.456Z",
     "__v": 0
   },
   {
@@ -140,16 +126,9 @@
     "__v": 0
   },
   {
-    "_id": "682f94f8c5e9a20010ab3f21",
-    "message": "Cuddles with my cat make everything better 😻",
-    "hearts": 29,
-    "createdAt": "2025-05-28T18:40:24.789Z",
-    "__v": 0
-  },
-  {
     "_id": "682f958dc5e9a20010ab3f22",
     "message": "The sound of rain on the roof is nature's lullaby 🌧️",
-    "hearts": 17,
+    "hearts": 18,
     "createdAt": "2025-05-28T19:15:41.012Z",
     "__v": 0
   },
@@ -233,7 +212,7 @@
   {
     "_id": "682f9c89c5e9a20010ab3f34",
     "message": "My garden is finally blooming after months of care 🌷",
-    "hearts": 31,
+    "hearts": 32,
     "createdAt": "2025-05-29T10:15:21.678Z",
     "__v": 0
   },
@@ -707,6 +686,57 @@
     ],
     "hearts": 0,
     "createdAt": "2025-06-04T20:29:54.612Z",
+    "__v": 0
+  },
+  {
+    "_id": "1749410747271zm05h12go",
+    "message": "DoGSs",
+    "tags": [
+      "home"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-08T19:25:47.271Z",
+    "__v": 0
+  },
+  {
+    "_id": "17494113809184wyhaglx2",
+    "message": "I love my dogs",
+    "tags": [
+      "home",
+      "emotions"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-08T19:36:20.919Z",
+    "__v": 0
+  },
+  {
+    "_id": "1749411725353yxfxvd4du",
+    "message": "trtrttrtr",
+    "tags": [
+      "general"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-08T19:42:05.353Z",
+    "__v": 0
+  },
+  {
+    "_id": "1749411753889ctm4h3cf4",
+    "message": "dogssssssssss",
+    "tags": [
+      "home"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-08T19:42:33.889Z",
+    "__v": 0
+  },
+  {
+    "_id": "17494120192522swrbphqq",
+    "message": "DOOOOOGS",
+    "tags": [
+      "general"
+    ],
+    "hearts": 0,
+    "createdAt": "2025-06-08T19:46:59.253Z",
     "__v": 0
   }
 ]
