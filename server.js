@@ -56,7 +56,7 @@ app.use(
   cors({
     origin: [
       'https://creative-hotteok-2e5655.netlify.app',
-      'http://localhost:3000' // Frontend running on port 3000
+      'http://localhost:5173' // Frontend running on port 3000
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
