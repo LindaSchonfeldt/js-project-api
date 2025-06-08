@@ -1,5 +1,4 @@
 import cors from 'cors'
-import morgan from 'morgan'
 /**
  * HAPPY THOUGHTS API SERVER
  *
@@ -33,6 +32,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import listEndpoints from 'express-list-endpoints'
 import mongoose from 'mongoose'
+import morgan from 'morgan'
 
 import Thought from './models/Thought.js'
 import { ThoughtsModel } from './models/thoughtsModel.js'
@@ -42,7 +42,8 @@ import { ApiError } from './utils/errors.js'
 
 dotenv.config() // Load environment variables
 
-const mongoURL = process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
+const mongoURL =
+  process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
 
 // Defines the port the app will run on
 const port = process.env.PORT || 8080
@@ -51,7 +52,6 @@ const app = express()
 // Middleware
 app.use(express.json()) // Parse JSON request bodies
 
-// Use the cors package instead of custom middleware
 app.use(
   cors({
     origin: [
