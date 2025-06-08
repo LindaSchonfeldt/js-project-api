@@ -1,3 +1,5 @@
+import cors from 'cors'
+import morgan from 'morgan'
 /**
  * HAPPY THOUGHTS API SERVER
  *
@@ -28,21 +30,19 @@
  */
 
 import dotenv from 'dotenv'
+import express from 'express'
+import listEndpoints from 'express-list-endpoints'
+import mongoose from 'mongoose'
+
+import Thought from './models/Thought.js'
+import { ThoughtsModel } from './models/thoughtsModel.js'
+import tagsRoutes from './routes/tagsRoutes.js'
+import thoughtsRoutes from './routes/thoughtsRoutes.js'
+import { ApiError } from './utils/errors.js'
 
 dotenv.config() // Load environment variables
 
-const mongoURL =
-  process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
-
-import cors from 'cors'
-import express from 'express'
-import listEndpoints from 'express-list-endpoints'
-import thoughtsRoutes from './routes/thoughtsRoutes.js'
-import tagsRoutes from './routes/tagsRoutes.js'
-import mongoose from 'mongoose'
-import Thought from './models/Thought.js'
-import { ThoughtsModel } from './models/thoughtsModel.js'
-import { ApiError } from './utils/errors.js'
+const mongoURL = process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
 
 // Defines the port the app will run on
 const port = process.env.PORT || 8080
@@ -54,11 +54,19 @@ app.use(express.json()) // Parse JSON request bodies
 // Use the cors package instead of custom middleware
 app.use(
   cors({
-    origin: ['https://creative-hotteok-2e5655.netlify.app'], // Only allow this specific frontend
+    origin: [
+      'https://creative-hotteok-2e5655.netlify.app',
+      'http://localhost:3000' // Frontend running on port 3000
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
   })
 )
+
+// Enable request logging in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'))
+}
 
 // Create middleware for database state handling
 app.use((req, res, next) => {
@@ -79,7 +87,50 @@ app.use((req, res, next) => {
   }
 })
 
-// Connect to MongoDB
+// Routes
+app.use('/thoughts', thoughtsRoutes)
+app.use('/tags', tagsRoutes)
+
+// API documentation endpoint
+app.get('/', (req, res) => {
+  const endpoints = listEndpoints(app)
+  res.send({
+    message: 'Welcome to the Happy Thoughts API',
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: endpoints
+  })
+})
+
+// Error handling middleware (after routes, before server start)
+app.use((err, req, res, next) => {
+  console.error(err)
+
+  if (err instanceof ApiError) {
+    // Our custom API errors have status codes and formatted responses
+    return res.status(err.statusCode).json({
+      success: false,
+      response: err.message,
+      message: err.publicMessage
+    })
+  } else {
+    // Unknown errors
+    return res.status(500).json({
+      success: false,
+      response: process.env.NODE_ENV === 'production' ? null : err.message,
+      message: 'An unexpected error occurred'
+    })
+  }
+})
+
+// 404 middleware
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'The requested endpoint does not exist'
+  })
+})
+
+// THEN connect and start server
 mongoose
   .connect(mongoURL)
   .then(async () => {
@@ -119,65 +170,18 @@ mongoose
     } else {
       console.log(`Database contains ${count} thoughts, skipping migration`)
     }
-  })
-  .catch((err) => console.error('MongoDB connection error:', err))
 
-// Routes
-app.use('/thoughts', thoughtsRoutes)
-app.use('/tags', tagsRoutes)
-
-// API documentation
-app.get('/', (req, res) => {
-  const endpoints = listEndpoints(app)
-  res.send({
-    message: 'Welcome to the Happy Thoughts API',
-    environment: process.env.NODE_ENV || 'development',
-    endpoints: endpoints
-  })
-})
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err)
-
-  if (err instanceof ApiError) {
-    // Our custom API errors have status codes and formatted responses
-    return res.status(err.statusCode).json({
-      success: false,
-      response: err.message,
-      message: err.publicMessage
-    })
-  } else {
-    // Unknown errors
-    return res.status(500).json({
-      success: false,
-      response: process.env.NODE_ENV === 'production' ? null : err.message,
-      message: 'An unexpected error occurred'
-    })
-  }
-})
-
-// 404 middleware for unhandled routes
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'The requested endpoint does not exist'
-  })
-})
-
-// MongoDB connection with better error handling
-mongoose
-  .connect(mongoURL)
-  .then(() => {
-    console.log('Connected to MongoDB')
-
-    // Only start the server after successful DB connection
+    // Start server last
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`)
     })
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err)
-    // Don't exit the process - allow API to run in file-based mode
-    console.log('Falling back to file-based storage')
+    // Still start server even if DB connection fails
+    app.listen(port, () => {
+      console.log(
+        `Server running in file-based mode on http://localhost:${port}`
+      )
+    })
   })
