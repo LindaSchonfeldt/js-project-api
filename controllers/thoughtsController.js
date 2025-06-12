@@ -52,7 +52,9 @@ export const getAllThoughts = async (req, res, next) => {
       throw new ValidationError('Limit must be between 1 and 100')
     }
 
+    // Use getPaginatedThoughts, not getAllThoughts
     const result = await thoughtsService.getPaginatedThoughts(page, limit)
+
     res.status(200).json({
       success: true,
       response: result,

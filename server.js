@@ -55,7 +55,7 @@ app.use(express.json()) // Parse JSON request bodies
 app.use(
   cors({
     origin: [
-      'https://creative-hotteok-2e5655.netlify.app',
+      'https://creative-hotteok-2e5655.netlify.app', // ✅ Make sure this exact URL is included
       'http://localhost:5173'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -87,6 +87,16 @@ app.use((req, res, next) => {
     next()
   }
 })
+
+// Add this before your routes
+app.use(
+  '/thoughts',
+  (req, res, next) => {
+    console.log('Thoughts route hit:', req.method, req.url)
+    next()
+  },
+  thoughtsRoutes
+)
 
 // Routes
 app.use('/thoughts', thoughtsRoutes)
@@ -186,3 +196,11 @@ mongoose
       )
     })
   })
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+})

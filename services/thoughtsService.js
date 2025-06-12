@@ -33,20 +33,11 @@ const thoughtsModel = new ThoughtsModel(useDatabase)
 // Create a thoughts model instance for file-based operations
 const fileThoughtsModel = new ThoughtsModel(false)
 
-export const createThought = async (message) => {
-  // Method should match what's available in the model
-  return thoughtsModel.createThought(message)
-}
-
-export const getThoughtById = async (id) => {
-  return thoughtsModel.getThoughtById(id)
-}
-
-export const getAllThoughts = async (page = 1, limit = 10) => {
+export const getPaginatedThoughts = async (page = 1, limit = 10) => {
   const skip = (page - 1) * limit
 
   const thoughts = await Thought.find()
-    .sort({ createdAt: -1 }) // Add this line - sorts newest first
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
 
@@ -62,8 +53,22 @@ export const getAllThoughts = async (page = 1, limit = 10) => {
   }
 }
 
+export const createThought = async (message) => {
+  // Use Mongoose directly, not the wrapper
+  const thought = new Thought({ message })
+  return await thought.save()
+}
+
+export const getThoughtById = async (id) => {
+  return await Thought.findById(id)
+}
+
 export const likeThought = async (id) => {
-  return thoughtsModel.likeThought(id)
+  return await Thought.findByIdAndUpdate(
+    id,
+    { $inc: { hearts: 1 } },
+    { new: true }
+  )
 }
 
 export const updateThought = async (id, message) => {
@@ -88,24 +93,4 @@ export const getAllTags = async () => {
 
 export const updateExistingThoughtsWithTags = async () => {
   return thoughtsModel.updateExistingThoughtsWithTags()
-}
-
-export const getPaginatedThoughts = async (page = 1, limit = 10) => {
-  const skip = (page - 1) * limit
-
-  const thoughts = await Thought.find()
-    .sort({ createdAt: -1 }) // Add this line to sort newest first
-    .skip(skip)
-    .limit(limit)
-
-  const total = await Thought.countDocuments()
-
-  return {
-    thoughts,
-    pagination: {
-      current: page,
-      total,
-      pages: Math.ceil(total / limit)
-    }
-  }
 }
