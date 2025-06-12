@@ -1,29 +1,33 @@
-import mongoose from 'mongoose'
-
-import Thought from '../models/Thought.js'
 /**
  * THOUGHTS SERVICE
  *
  * Business Logic Layer for Happy Thoughts API
  *
  * This service layer acts as an intermediary between controllers and models,
- * handling business logic, data validation, and orchestrating operations.
+ * handling business logic, data validation, and orchestrating complex operations.
+ * Implements the business rules and workflows for thought management.
  *
  * Responsibilities:
- * - Implement business rules and workflows
- * - Coordinate between multiple models if needed
- * - Transform data for business requirements
- * - Handle complex validation logic
- * - Manage external API integrations (future)
+ * - Implement business rules and complex workflows
+ * - Coordinate between multiple models when needed
+ * - Transform data for specific business requirements
+ * - Handle advanced validation logic beyond basic model validation
+ * - Manage external API integrations (future extensibility)
+ * - Orchestrate multi-step operations and transactions
  *
  * Architecture: MVC Pattern with Service Layer
  * - Routes: URL mapping and route definitions
  * - Controllers: HTTP request/response handling
- * - Services: Business logic and data orchestration
+ * - Services: Business logic and data orchestration ← YOU ARE HERE
  * - Models: Data access (supports both file and MongoDB storage)
- *
+ * * @author Linda Schönfeldt
+ * @version 1.0.0
+ * @created June 2025
+ * @updated June 2025
  */
+import mongoose from 'mongoose'
 
+import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 
 // Choose storage type based on environment

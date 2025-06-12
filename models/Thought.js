@@ -1,12 +1,28 @@
 /**
  * THOUGHT MONGOOSE MODEL
  *
- * MongoDB schema definition for thoughts
+ * MongoDB schema definition for thoughts in the Happy Thoughts API
  *
- * This file defines the data structure for thoughts stored in MongoDB.
+ * This file defines the comprehensive data structure for thoughts stored in MongoDB.
+ * Includes validation rules, default values, and field constraints to ensure
+ * data integrity and consistency across the application.
  *
- * @author Linda Schönfeldt
+ * Schema Features:
+ * - Message validation (5-140 characters with trimming)
+ * - Automatic tag array management with lowercase normalization
+ * - Hearts/likes counter with non-negative validation
+ * - Automatic timestamp tracking for creation and updates
+ * - String trimming and length validation
+ *
+ * Architecture: MVC Pattern with Service Layer
+ * - Routes: URL mapping and route definitions
+ * - Controllers: HTTP request/response handling
+ * - Services: Business logic and data orchestration
+ * - Models: Data access (supports both file and MongoDB storage) ← YOU ARE HERE
+ * * @author Linda Schönfeldt
+ * @version 1.0.0
  * @created June 2025
+ * @updated June 2025
  */
 
 import mongoose from 'mongoose'

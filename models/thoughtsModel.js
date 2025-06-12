@@ -4,26 +4,35 @@
  * Data Storage and Retrieval for Happy Thoughts API
  *
  * This model handles all data operations including file I/O, data validation,
- * and the intelligent auto-tagging system. Currently uses JSON file storage
- * but designed for easy migration to MongoDB/database.
+ * and the intelligent auto-tagging system. Supports dual storage modes:
+ * JSON file storage for development and MongoDB for production scalability.
  *
  * Responsibilities:
- * - Load and save data to/from JSON file
- * - Perform CRUD operations on thoughts
- * - Auto-generate tags using keyword and emoji analysis
- * - Handle data structure validation
- * - Manage data persistence and caching
- * - Provide search and filtering capabilities
+ * - Load and save data to/from JSON file or MongoDB
+ * - Perform comprehensive CRUD operations on thoughts
+ * - Auto-generate tags using advanced keyword and emoji analysis
+ * - Handle data structure validation and integrity
+ * - Manage data persistence, caching, and performance optimization
+ * - Provide advanced search, filtering, and sorting capabilities
+ * - Implement pagination for efficient data loading
  *
  * Features:
- * - Automatic tag generation (10+ categories)
- * - Keyword matching with plural/verb forms
- * - Emoji pattern recognition
- * - Pagination support
- * - Data integrity validation
+ * - Automatic intelligent tag generation (10+ categories)
+ * - Advanced keyword matching with plural/verb form recognition
+ * - Emoji pattern recognition and categorization
+ * - Comprehensive pagination support with configurable limits
+ * - Real-time data integrity validation
+ * - Performance-optimized data operations
  *
- * Architecture: Service → Model → Data Storage
- *
+ * Architecture: MVC Pattern with Service Layer
+ * - Routes: URL mapping and route definitions
+ * - Controllers: HTTP request/response handling
+ * - Services: Business logic and data orchestration
+ * - Models: Data access (supports both file and MongoDB storage) ← YOU ARE HERE
+ * * @author Linda Schönfeldt
+ * @version 1.0.0
+ * @created June 2025
+ * @updated June 2025
  */
 
 import fs from 'fs'

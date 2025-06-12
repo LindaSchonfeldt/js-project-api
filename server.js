@@ -1,4 +1,3 @@
-import cors from 'cors'
 /**
  * HAPPY THOUGHTS API SERVER
  *
@@ -14,20 +13,22 @@ import cors from 'cors'
  * - 💖 Social interactions with like/heart system
  * - 🏷️ Smart categorization into 10+ categories
  * - 📊 Trending system based on popularity
- * - 🔍 Tag-based filtering and search
+ * - 🔍 Tag-based filtering and search capabilities
  * - 💾 MongoDB integration for scalable data storage
+ * - 🔄 Dual storage support (file-based and database)
  *
  * Architecture: MVC Pattern with Service Layer
  * - Routes: URL mapping and route definitions
  * - Controllers: HTTP request/response handling
  * - Services: Business logic and data orchestration
  * - Models: Data access (supports both file and MongoDB storage)
- *
- * @author Linda Schönfeldt
+ * * @author Linda Schönfeldt
  * @version 1.0.0
  * @created June 2025
+ * @updated June 2025
  */
 
+import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import listEndpoints from 'express-list-endpoints'

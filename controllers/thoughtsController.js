@@ -4,36 +4,43 @@
  * HTTP Request/Response Handler for Happy Thoughts API
  *
  * This controller handles all HTTP-related operations for thoughts endpoints,
- * including request parsing, response formatting, and error handling.
+ * including request parsing, response formatting, and comprehensive error handling.
+ * Acts as the bridge between HTTP requests and business logic services.
  *
  * Responsibilities:
- * - Parse HTTP requests (query params, body, headers)
- * - Validate request format and basic input
- * - Call appropriate service methods
- * - Format HTTP responses with proper status codes
- * - Handle and format errors consistently
- * - Manage HTTP-specific concerns (caching, CORS, etc.)
+ * - Parse and validate HTTP requests (query params, body, headers)
+ * - Validate request format and perform basic input sanitization
+ * - Call appropriate service methods for business logic
+ * - Format HTTP responses with proper status codes and structure
+ * - Handle and format errors consistently across all endpoints
+ * - Manage HTTP-specific concerns (caching, CORS, pagination)
+ * - Implement request logging and performance monitoring
  *
- * Architecture: Routes → Controller → Service
- *
- */
-/**
  * Available Endpoints:
- * - GET    /thoughts           - Get paginated thoughts (getAllThoughts)
- * - GET    /thoughts/:id       - Get specific thought (getThoughtById)
- * - POST   /thoughts           - Create new thought (createThought)
- * - POST   /thoughts/:id/like  - Increment hearts count (likeThought)
- * - DELETE /thoughts/:id       - Remove thought (deleteThought)
- * - GET    /thoughts/trending  - Get popular thoughts (getTrendingThoughts)
- * - GET    /thoughts/tag/:tag  - Get thoughts by tag (getThoughtsByTag)
- * - GET    /tags               - Get all tags (getAllTags)
- * - POST   /thoughts/auto-tag  - Tag existing thoughts (autoTagThoughts)
- */
-/**
+ * - GET    /thoughts           - Get paginated thoughts with filtering options
+ * - GET    /thoughts/:id       - Get specific thought by unique ID
+ * - POST   /thoughts           - Create new thought with auto-tagging
+ * - POST   /thoughts/:id/like  - Increment hearts count (social feature)
+ * - DELETE /thoughts/:id       - Remove thought permanently
+ * - GET    /thoughts/trending  - Get popular thoughts sorted by hearts
+ * - GET    /thoughts/tag/:tag  - Get thoughts filtered by specific tag
+ * - GET    /tags               - Get all available tags with usage stats
+ * - POST   /thoughts/auto-tag  - Bulk auto-tag existing thoughts
+ *
  * Error Handling:
- * - 400 Bad Request - Invalid input format
- * - 404 Not Found - Resource doesn't exist
- * - 500 Server Error - Unexpected errors
+ * - 400 Bad Request - Invalid input format or validation failures
+ * - 404 Not Found - Resource doesn't exist or invalid ID
+ * - 500 Server Error - Unexpected errors and system failures
+ *
+ * Architecture: MVC Pattern with Service Layer
+ * - Routes: URL mapping and route definitions
+ * - Controllers: HTTP request/response handling ← YOU ARE HERE
+ * - Services: Business logic and data orchestration
+ * - Models: Data access (supports both file and MongoDB storage)
+ * * @author Linda Schönfeldt
+ * @version 1.0.0
+ * @created June 2025
+ * @updated June 2025
  */
 
 import * as thoughtsService from '../services/thoughtsService.js'
@@ -135,12 +142,10 @@ export const likeThought = async (req, res, next) => {
 }
 
 export const updateThought = async (req, res, next) => {
-  // Add next parameter
   try {
     const { message } = req.body
     const { id } = req.params
 
-    // Validation is correct
     if (!message || typeof message !== 'string') {
       throw new ValidationError('Message is required and must be a string')
     }
