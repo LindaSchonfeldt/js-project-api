@@ -42,12 +42,23 @@ export const getThoughtById = async (id) => {
   return thoughtsModel.getThoughtById(id)
 }
 
-export const getAllThoughts = async (req) => {
-  // Use MongoDB if connected, otherwise use file storage
-  if (mongoose.connection.readyState === 1) {
-    return await Thought.find().sort({ createdAt: -1 })
-  } else {
-    return fileThoughtsModel.getAllThoughts()
+export const getAllThoughts = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit
+
+  const thoughts = await Thought.find()
+    .sort({ createdAt: -1 }) // Add this line - sorts newest first
+    .skip(skip)
+    .limit(limit)
+
+  const total = await Thought.countDocuments()
+
+  return {
+    thoughts,
+    pagination: {
+      current: page,
+      total,
+      pages: Math.ceil(total / limit)
+    }
   }
 }
 
