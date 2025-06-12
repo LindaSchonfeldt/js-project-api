@@ -175,10 +175,14 @@ export const updateThought = async (req, res, next) => {
 
 export const deleteThought = async (req, res, next) => {
   const { id } = req.params
+  console.log('DELETE request for ID:', id)
+
   try {
     const thought = await thoughtsService.deleteThought(id)
+    console.log('Delete result:', thought)
 
     if (!thought) {
+      console.log('Thought not found')
       throw new NotFoundError('Thought')
     }
 
@@ -188,6 +192,7 @@ export const deleteThought = async (req, res, next) => {
       message: 'Thought was successfully deleted'
     })
   } catch (error) {
+    console.error('Delete error:', error)
     next(error)
   }
 }

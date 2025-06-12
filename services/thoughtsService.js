@@ -76,7 +76,7 @@ export const updateThought = async (id, message) => {
 }
 
 export const deleteThought = async (id) => {
-  return thoughtsModel.deleteThought(id)
+  return await Thought.findByIdAndDelete(id)
 }
 
 export const getTrendingThoughts = async () => {
