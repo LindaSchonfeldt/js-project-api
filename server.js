@@ -16,13 +16,13 @@
  * - 🔍 Tag-based filtering and search capabilities
  * - 💾 MongoDB integration for scalable data storage
  * - 🔄 Dual storage support (file-based and database)
- *
- * Architecture: MVC Pattern with Service Layer
+ * * Architecture: MVC Pattern with Service Layer
  * - Routes: URL mapping and route definitions
  * - Controllers: HTTP request/response handling
  * - Services: Business logic and data orchestration
  * - Models: Data access (supports both file and MongoDB storage)
- * * @author Linda Schönfeldt
+ *
+ * @author Linda Schönfeldt
  * @version 1.0.0
  * @created June 2025
  * @updated June 2025

@@ -34,7 +34,7 @@ import { ThoughtsModel } from '../models/thoughtsModel.js'
 const useDatabase = process.env.USE_DATABASE === 'true' || false
 const thoughtsModel = new ThoughtsModel(useDatabase)
 
-// Create a thoughts model instance for file-based operations
+// Create an instance for tag identification
 const fileThoughtsModel = new ThoughtsModel(false)
 
 export const getPaginatedThoughts = async (page = 1, limit = 10) => {
@@ -58,8 +58,14 @@ export const getPaginatedThoughts = async (page = 1, limit = 10) => {
 }
 
 export const createThought = async (message) => {
-  // Use Mongoose directly, not the wrapper
-  const thought = new Thought({ message })
+  // Create new thought with auto-generated tags
+  const tags = thoughtsModel.identifyTags(message)
+
+  const thought = new Thought({
+    message,
+    tags // Add the auto-generated tags
+  })
+
   return await thought.save()
 }
 

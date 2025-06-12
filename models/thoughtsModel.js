@@ -97,8 +97,8 @@ export class ThoughtsModel {
   }
 
   identifyTags(message) {
-    const text = message.toLowerCase()
     const tags = []
+    const text = message.toLowerCase()
 
     // Define keyword categories
     const tagKeywords = {
