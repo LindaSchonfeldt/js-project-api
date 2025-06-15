@@ -58,12 +58,12 @@ export const getPaginatedThoughts = async (page = 1, limit = 10) => {
 }
 
 export const createThought = async (message) => {
-  // Create new thought with auto-generated tags
+  // Add the auto-tagging logic
   const tags = thoughtsModel.identifyTags(message)
 
   const thought = new Thought({
-    message,
-    tags // Add the auto-generated tags
+    message: message.trim(),
+    tags // ✅ Add the auto-generated tags
   })
 
   return await thought.save()

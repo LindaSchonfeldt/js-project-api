@@ -1,3 +1,4 @@
+import userRoutes from './routes/userRoutes.js'
 /**
  * HAPPY THOUGHTS API SERVER
  *
@@ -56,7 +57,7 @@ app.use(express.json()) // Parse JSON request bodies
 app.use(
   cors({
     origin: [
-      'https://creative-hotteok-2e5655.netlify.app', // ✅ Make sure this exact URL is included
+      'https://creative-hotteok-2e5655.netlify.app',
       'http://localhost:5173'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -92,6 +93,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/thoughts', thoughtsRoutes)
 app.use('/tags', tagsRoutes)
+app.use('/users', userRoutes)
 
 // API documentation endpoint
 app.get('/', (req, res) => {

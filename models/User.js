@@ -24,6 +24,7 @@
  * @updated June 2025
  */
 
+import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import mongoose from 'mongoose'
 
@@ -41,6 +42,19 @@ const userSchema = new mongoose.Schema({
     default: () => crypto.randomBytes(128).toString('hex')
   }
 })
+
+// Add pre-save hook to hash passwords
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10)
+  }
+  next()
+})
+
+// Add this method to your userSchema
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password)
+}
 
 const User = mongoose.model('User', userSchema)
 export default User
