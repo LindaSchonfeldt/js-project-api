@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken'
 
 import User from '../models/User.js'
+import { ValidationError } from '../utils/errors.js'
 
-const { JWT_SECRET } = process.env
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key' // ✅ Add fallback
 
 export const registerUser = async (req, res, next) => {
   try {
