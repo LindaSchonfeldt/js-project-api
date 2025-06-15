@@ -39,7 +39,6 @@ import Thought from './models/Thought.js'
 import { ThoughtsModel } from './models/thoughtsModel.js'
 import tagsRoutes from './routes/tagsRoutes.js'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
-import thoughtsRoutes from './routes/thoughtsRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import { ApiError } from './utils/errors.js'
 
