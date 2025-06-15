@@ -29,13 +29,19 @@ import crypto from 'crypto'
 import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
-  name: {
+  username: {
     type: String,
-    required: true
+    required: true,
+    unique: true,
+    trim: true,
+    minlength: [3, 'Username must be at least 3 characters long'],
+    maxlength: [20, 'Username cannot exceed 20 characters']
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    minlength: [6, 'Password must be at least 6 characters long']
+    // must contain a number and letter
   },
   accessToken: {
     type: String,

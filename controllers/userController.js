@@ -1,18 +1,49 @@
+import jwt from 'jsonwebtoken'
+
 import User from '../models/User.js'
+
+const { JWT_SECRET } = process.env
 
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, password } = req.body
+    const { username, password } = req.body // ✅ Only username and password
 
-    const user = new User({ name, password })
+    // Validation
+    if (!username || !password) {
+      throw new ValidationError('Username and password are required')
+    }
+
+    if (password.length < 6) {
+      throw new ValidationError('Password must be at least 6 characters long')
+    }
+
+    if (username.length < 3) {
+      throw new ValidationError('Username must be at least 3 characters long')
+    }
+
+    // Check if username already exists
+    const existingUser = await User.findOne({ username })
+    if (existingUser) {
+      throw new ValidationError('Username already exists')
+    }
+
+    // Create new user
+    const user = new User({ username, password })
     await user.save()
+
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
 
     res.status(201).json({
       success: true,
-      response: {
-        userId: user._id,
-        name: user.name,
-        accessToken: user.accessToken
+      token: token,
+      user: {
+        id: user._id,
+        username: user.username
       },
       message: 'User successfully registered'
     })
@@ -23,9 +54,15 @@ export const registerUser = async (req, res, next) => {
 
 export const loginUser = async (req, res, next) => {
   try {
-    const { name, password } = req.body
+    const { username, password } = req.body
 
-    const user = await User.findOne({ name })
+    if (!username || !password) {
+      throw new ValidationError('Username and password are required')
+    }
+
+    // Find user by username
+    const user = await User.findOne({ username })
+
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
         success: false,
@@ -33,12 +70,19 @@ export const loginUser = async (req, res, next) => {
       })
     }
 
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
     res.json({
       success: true,
-      response: {
-        userId: user._id,
-        name: user.name,
-        accessToken: user.accessToken
+      token: token,
+      user: {
+        id: user._id,
+        username: user.username
       },
       message: 'Login successful'
     })

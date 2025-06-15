@@ -57,15 +57,23 @@ export const getPaginatedThoughts = async (page = 1, limit = 10) => {
   }
 }
 
-export const createThought = async (message) => {
-  // Add the auto-tagging logic
+export const createThought = async (message, user = null) => {
   const tags = thoughtsModel.identifyTags(message)
 
-  const thought = new Thought({
+  const thoughtData = {
     message: message.trim(),
-    tags // ✅ Add the auto-generated tags
-  })
+    tags
+  }
 
+  // Add user info if authenticated
+  if (user) {
+    thoughtData.user = user._id
+    thoughtData.isAnonymous = false
+  } else {
+    thoughtData.isAnonymous = true
+  }
+
+  const thought = new Thought(thoughtData)
   return await thought.save()
 }
 

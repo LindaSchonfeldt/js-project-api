@@ -111,11 +111,15 @@ export const createThought = async (req, res, next) => {
       )
     }
 
-    const newThought = await thoughtsService.createThought(message)
+    // Create thought (with or without user)
+    const newThought = await thoughtsService.createThought(message, req.user)
+
     res.status(201).json({
       success: true,
       response: newThought,
-      message: 'Thought was successfully created'
+      message: req.isAuthenticated
+        ? 'Thought was successfully created'
+        : 'Anonymous thought was successfully created'
     })
   } catch (error) {
     next(error)

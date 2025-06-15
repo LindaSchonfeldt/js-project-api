@@ -32,17 +32,24 @@
 import express from 'express'
 
 import * as thoughtsController from '../controllers/thoughtsController.js'
+import { optionalAuth } from '../middleware/optionalAuth.js'
+
+// ← Add this import
 
 const router = express.Router()
 
+// Public routes (no authentication needed)
 router.get('/', thoughtsController.getAllThoughts)
-router.post('/', thoughtsController.createThought)
 router.get('/trending', thoughtsController.getTrendingThoughts)
 router.get('/tag/:tag', thoughtsController.getThoughtsByTag)
-router.post('/auto-tag', thoughtsController.autoTagThoughts)
 router.get('/:id', thoughtsController.getThoughtById)
-router.delete('/:id', thoughtsController.deleteThought)
-router.post('/:id/like', thoughtsController.likeThought)
-router.put('/:id', thoughtsController.updateThought)
+
+// Mixed routes (optional authentication - allows both logged in and anonymous users)
+router.post('/', optionalAuth, thoughtsController.createThought)
+router.post('/:id/like', optionalAuth, thoughtsController.likeThought)
+
+// Protected routes (authentication required)
+// router.put('/:id', authenticateUser, thoughtsController.updateThought)
+// router.delete('/:id', authenticateUser, thoughtsController.deleteThought)
 
 export default router
