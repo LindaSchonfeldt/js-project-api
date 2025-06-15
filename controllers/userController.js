@@ -3,11 +3,11 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 import { ValidationError } from '../utils/errors.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key' // ✅ Add fallback
+const JWT_SECRET = process.env.JWT_SECRET
 
 export const registerUser = async (req, res, next) => {
   try {
-    const { username, password } = req.body // ✅ Only username and password
+    const { username, password } = req.body
 
     // Validation
     if (!username || !password) {

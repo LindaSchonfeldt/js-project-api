@@ -1,4 +1,3 @@
-import userRoutes from './routes/userRoutes.js'
 /**
  * HAPPY THOUGHTS API SERVER
  *
@@ -40,6 +39,8 @@ import Thought from './models/Thought.js'
 import { ThoughtsModel } from './models/thoughtsModel.js'
 import tagsRoutes from './routes/tagsRoutes.js'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
+import thoughtsRoutes from './routes/thoughtsRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 import { ApiError } from './utils/errors.js'
 
 dotenv.config() // Load environment variables
@@ -102,6 +103,19 @@ app.get('/', (req, res) => {
     message: 'Welcome to the Happy Thoughts API',
     environment: process.env.NODE_ENV || 'development',
     endpoints: endpoints
+  })
+})
+
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `The requested endpoint ${req.method} ${req.originalUrl} does not exist`,
+    availableEndpoints: [
+      'GET /thoughts',
+      'POST /thoughts',
+      'POST /users/signup',
+      'POST /users/login'
+    ]
   })
 })
 
