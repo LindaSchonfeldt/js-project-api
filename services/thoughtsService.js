@@ -89,11 +89,34 @@ export const likeThought = async (id) => {
   )
 }
 
-export const updateThought = async (id, message) => {
-  return thoughtsModel.updateThought(id, message)
+export const updateThought = async (id, message, userId) => {
+  const thought = await Thought.findById(id)
+
+  if (!thought) {
+    throw new NotFoundError('Thought not found')
+  }
+
+  // Double-check ownership at service level too
+  if (thought.user.toString() !== userId) {
+    throw new AuthorizationError('You can only edit your own thoughts')
+  }
+
+  thought.message = message
+  return await thought.save()
 }
 
-export const deleteThought = async (id) => {
+export const deleteThought = async (id, userId) => {
+  const thought = await Thought.findById(id)
+
+  if (!thought) {
+    throw new NotFoundError('Thought not found')
+  }
+
+  // Double-check ownership at service level too
+  if (thought.user.toString() !== userId) {
+    throw new AuthorizationError('You can only delete your own thoughts')
+  }
+
   return await Thought.findByIdAndDelete(id)
 }
 

@@ -32,6 +32,7 @@
 import express from 'express'
 
 import * as thoughtsController from '../controllers/thoughtsController.js'
+import { authenticateUser } from '../middleware/auth.js'
 import { optionalAuth } from '../middleware/optionalAuth.js'
 
 // ← Add this import
@@ -49,7 +50,7 @@ router.post('/', optionalAuth, thoughtsController.createThought)
 router.post('/:id/like', optionalAuth, thoughtsController.likeThought)
 
 // Protected routes (authentication required)
-// router.put('/:id', authenticateUser, thoughtsController.updateThought)
-// router.delete('/:id', authenticateUser, thoughtsController.deleteThought)
+router.put('/:id', authenticateUser, thoughtsController.updateThought)
+router.delete('/:id', authenticateUser, thoughtsController.deleteThought)
 
 export default router

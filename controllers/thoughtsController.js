@@ -1,3 +1,4 @@
+import Thought from '../models/Thought.js'
 /**
  * THOUGHTS CONTROLLER
  *
@@ -44,7 +45,11 @@
  */
 
 import * as thoughtsService from '../services/thoughtsService.js'
-import { NotFoundError, ValidationError } from '../utils/errors.js'
+import {
+  AuthorizationError,
+  NotFoundError,
+  ValidationError
+} from '../utils/errors.js'
 
 export const getAllThoughts = async (req, res, next) => {
   try {
@@ -147,53 +152,65 @@ export const likeThought = async (req, res, next) => {
 
 export const updateThought = async (req, res, next) => {
   try {
-    const { message } = req.body
     const { id } = req.params
+    const { message } = req.body
+    const userId = req.user?.id // Get from auth middleware
 
-    if (!message || typeof message !== 'string') {
-      throw new ValidationError('Message is required and must be a string')
+    // Validation
+    if (!message || message.trim().length < 5) {
+      throw new ValidationError('Message is too short (min 5 characters)')
     }
 
-    if (message.length < 5 || message.length > 140) {
-      throw new ValidationError(
-        'Message must be between 5 and 140 characters',
-        {
-          field: 'message',
-          current: message.length,
-          min: 5,
-          max: 140
-        }
-      )
+    if (message.length > 140) {
+      throw new ValidationError('Message too long (max 140 characters)')
+    }
+    // Find the thought first
+    const thought = await thoughtsService.getThoughtById(id)
+
+    if (!thought) {
+      throw new NotFoundError('Thought not found')
     }
 
-    const updatedThought = await thoughtsService.updateThought(id, message)
-
-    if (!updatedThought) {
-      throw new NotFoundError('Thought')
+    // ✅ OWNERSHIP CHECK - This is where you prevent unauthorized updates
+    if (thought.user.toString() !== userId) {
+      throw new AuthorizationError('You can only edit your own thoughts')
     }
 
-    res.status(200).json({
+    // Only proceed if user owns the thought
+    const updatedThought = await thoughtsService.updateThought(
+      id,
+      message,
+      userId
+    )
+
+    res.json({
       success: true,
       response: updatedThought,
       message: 'Thought was successfully updated'
     })
   } catch (error) {
-    next(error)
+    next(error) // Consistent error handling
   }
 }
 
 export const deleteThought = async (req, res, next) => {
   const { id } = req.params
-  console.log('DELETE request for ID:', id)
+  const userId = req.user?.id // ✅ Add this line (was missing)
 
   try {
-    const thought = await thoughtsService.deleteThought(id)
-    console.log('Delete result:', thought)
+    const thought = await thoughtsService.getThoughtById(id) // Get thought first
 
     if (!thought) {
-      console.log('Thought not found')
-      throw new NotFoundError('Thought')
+      throw new NotFoundError('Thought not found')
     }
+
+    // ✅ OWNERSHIP CHECK - Prevent unauthorized deletes
+    if (thought.user.toString() !== userId) {
+      throw new AuthorizationError('You can only delete your own thoughts')
+    }
+
+    // Only delete if user owns it
+    await thoughtsService.deleteThought(id)
 
     res.status(200).json({
       success: true,
@@ -201,7 +218,6 @@ export const deleteThought = async (req, res, next) => {
       message: 'Thought was successfully deleted'
     })
   } catch (error) {
-    console.error('Delete error:', error)
     next(error)
   }
 }
