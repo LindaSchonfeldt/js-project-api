@@ -90,18 +90,22 @@ export const likeThought = async (id) => {
 }
 
 export const updateThought = async (id, message, userId) => {
+  console.log('💾 Service updateThought:', { id, message, userId }) // Debug line
+
   const thought = await Thought.findById(id)
 
   if (!thought) {
     throw new NotFoundError('Thought not found')
   }
 
-  // Double-check ownership at service level too
   if (thought.user.toString() !== userId) {
     throw new AuthorizationError('You can only edit your own thoughts')
   }
 
-  thought.message = message
+  // Make sure you're setting the message correctly
+  thought.message = message // This should be the actual message, not hardcoded
+  console.log('💾 Saving thought with message:', thought.message) // Debug line
+
   return await thought.save()
 }
 

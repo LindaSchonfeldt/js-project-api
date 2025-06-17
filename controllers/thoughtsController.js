@@ -154,29 +154,19 @@ export const updateThought = async (req, res, next) => {
   try {
     const { id } = req.params
     const { message } = req.body
-    const userId = req.user?.id // Get from auth middleware
+    const userId = req.user?.id
+
+    console.log('🔧 Backend update called:', { id, message, userId }) // Debug line
 
     // Validation
     if (!message || message.trim().length < 5) {
       throw new ValidationError('Message is too short (min 5 characters)')
     }
 
-    if (message.length > 140) {
-      throw new ValidationError('Message too long (max 140 characters)')
-    }
-    // Find the thought first
-    const thought = await thoughtsService.getThoughtById(id)
+    // Your existing update logic...
+    console.log('✅ About to update thought with message:', message) // Debug line
 
-    if (!thought) {
-      throw new NotFoundError('Thought not found')
-    }
-
-    // ✅ OWNERSHIP CHECK - This is where you prevent unauthorized updates
-    if (thought.user.toString() !== userId) {
-      throw new AuthorizationError('You can only edit your own thoughts')
-    }
-
-    // Only proceed if user owns the thought
+    // Make sure you're actually using the 'message' parameter
     const updatedThought = await thoughtsService.updateThought(
       id,
       message,
@@ -189,7 +179,7 @@ export const updateThought = async (req, res, next) => {
       message: 'Thought was successfully updated'
     })
   } catch (error) {
-    next(error) // Consistent error handling
+    next(error)
   }
 }
 
