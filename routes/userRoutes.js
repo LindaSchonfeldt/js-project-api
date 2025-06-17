@@ -6,12 +6,12 @@ import {
   getAllThoughts,
   updateThought
 } from '../controllers/thoughtsController.js'
-import { authenticateUser, signin, signup } from '../middleware/auth.js'
+import { authenticateUser, login, signup } from '../middleware/auth.js'
 
 const router = express.Router()
 
 // Auth routes (no authentication required)
-router.post('/signin', signin)
+router.post('/login', login)
 router.post('/signup', signup)
 
 // Thoughts routes under /users/thoughts (authentication required)
