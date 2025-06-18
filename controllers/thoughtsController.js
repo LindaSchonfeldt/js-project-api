@@ -1,4 +1,6 @@
 import Thought from '../models/Thought.js'
+import { ThoughtsModel } from '../models/thoughtsModel.js'
+
 /**
  * THOUGHTS CONTROLLER
  *
