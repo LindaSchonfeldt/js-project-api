@@ -48,11 +48,11 @@ import * as thoughtsService from '../services/thoughtsService.js'
  */
 
 export const getAllThoughts = async (req, res, next) => {
+  const page  = parseInt(req.query.page,  10) || 1
+  const limit = parseInt(req.query.limit, 10) || 10
+
   try {
-    const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(
-      page,
-      limit
-    )
+    const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(page, limit)
     const tagger = new ThoughtsModel(false)
 
     const payload = thoughts.map((doc) => {
@@ -72,14 +72,11 @@ export const getAllThoughts = async (req, res, next) => {
       return t
     })
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       response: {
         thoughts: payload,
-        pagination: {
-          current: page,
-          pages: totalPages
-        }
+        pagination: { current: page, pages: totalPages }
       },
       message: 'All thoughts were successfully fetched'
     })
