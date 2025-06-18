@@ -1,5 +1,6 @@
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
+import * as thoughtsService from '../services/thoughtsService.js'
 
 /**
  * THOUGHTS CONTROLLER
@@ -46,83 +47,66 @@ import { ThoughtsModel } from '../models/thoughtsModel.js'
  * @updated June 2025
  */
 
-import * as thoughtsService from '../services/thoughtsService.js'
-import {
-  AuthorizationError,
-  NotFoundError,
-  ValidationError
-} from '../utils/errors.js'
-
 export const getAllThoughts = async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 10
+
   try {
-    const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10
-
-    // Validate pagination parameters
-    if (page < 1) {
-      throw new ValidationError('Page must be at least 1')
-    }
-    if (limit < 1 || limit > 100) {
-      throw new ValidationError('Limit must be between 1 and 100')
-    }
-
-    // Get paginated thoughts
     const result = await thoughtsService.getPaginatedThoughts(page, limit)
+    const tagger = new ThoughtsModel(false)
 
-    // Add themeTags for existing thoughts that don't have them
-    const fileThoughtsModel = new ThoughtsModel(false)
-    result.thoughts = result.thoughts.map((thought) => {
-      // Convert to plain object if it's a Mongoose document
-      const plainThought = thought.toObject ? thought.toObject() : thought
+    result.thoughts = result.thoughts.map((doc) => {
+      const t = doc.toObject ? doc.toObject() : doc
 
-      // If themeTags doesn't exist or is empty, copy from tags or generate new ones
-      if (!plainThought.themeTags || plainThought.themeTags.length === 0) {
-        plainThought.themeTags =
-          plainThought.tags && plainThought.tags.length > 0
-            ? [...plainThought.tags]
-            : fileThoughtsModel.identifyTags(plainThought.message)
+      // ensure themeTags
+      if (!t.themeTags?.length) {
+        t.themeTags = t.tags?.length
+          ? [...t.tags]
+          : tagger.identifyTags(t.message)
       }
 
-      return plainThought
+      // ADD THIS: normalize user → userId
+      t.userId = t.user?.toString() || null
+
+      // optionally delete t.user
+      delete t.user
+
+      return t
     })
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       response: result,
       message: 'All thoughts were successfully fetched'
     })
-  } catch (error) {
-    next(error)
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const getThoughtById = async (req, res, next) => {
-  const { id } = req.params
   try {
-    const thought = await thoughtsService.getThoughtById(id)
-    if (!thought) {
-      throw new NotFoundError('Thought not found')
+    const thought = await thoughtsService.getThoughtById(req.params.id)
+    if (!thought) throw new Error('Not Found')
+
+    const plain = thought.toObject ? thought.toObject() : thought
+    if (!plain.themeTags?.length) {
+      plain.themeTags = plain.tags?.length
+        ? [...plain.tags]
+        : new ThoughtsModel(false).identifyTags(plain.message)
     }
 
-    // Convert to plain object
-    const plainThought = thought.toObject ? thought.toObject() : thought
+    plain.userId = plain.user?.toString() || null
+    delete plain.user
 
-    // Add themeTags if missing
-    if (!plainThought.themeTags || plainThought.themeTags.length === 0) {
-      const fileThoughtsModel = new ThoughtsModel(false)
-      plainThought.themeTags =
-        plainThought.tags && plainThought.tags.length > 0
-          ? [...plainThought.tags]
-          : fileThoughtsModel.identifyTags(plainThought.message)
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      response: plainThought,
+      response: plain,
       message: 'Thought was successfully fetched'
     })
-  } catch (error) {
-    next(error)
+  } catch (err) {
+    next(err)
   }
 }
 
