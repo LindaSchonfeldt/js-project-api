@@ -111,6 +111,29 @@ app.get('/', (req, res) => {
   })
 })
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    await mongoose.connection.db.admin().ping()
+
+    return res.status(200).json({
+      status: 'healthy',
+      database: 'connected',
+      uptime: process.uptime(),
+      timestamp: new Date(),
+      version: process.env.npm_package_version || '1.0.0'
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status: 'unhealthy',
+      database: 'disconnected',
+      error: error.message,
+      timestamp: new Date()
+    })
+  }
+})
+
 // Error handling middleware (after routes, before server start)
 app.use((err, req, res, next) => {
   console.error(err)
