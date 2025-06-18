@@ -48,40 +48,43 @@ import * as thoughtsService from '../services/thoughtsService.js'
  */
 
 export const getAllThoughts = async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 10
-
   try {
-    const result = await thoughtsService.getPaginatedThoughts(page, limit)
+    const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(
+      page,
+      limit
+    )
     const tagger = new ThoughtsModel(false)
 
-    result.thoughts = result.thoughts.map((doc) => {
-      const t = doc.toObject ? doc.toObject() : doc
-
-      // Ensure themeTags
+    const payload = thoughts.map((doc) => {
+      const t = doc.toObject()
+      // themeTags logic…
       if (!t.themeTags?.length) {
         t.themeTags = t.tags?.length
           ? [...t.tags]
           : tagger.identifyTags(t.message)
       }
 
-      // Normalize user → userId
-      t.userId = t.user?.toString() || null
-
-      // Optionally delete t.user
+      // Flatten user → userId + username
+      t.userId = t.user?._id.toString() || null
+      t.username = t.user?.username || null
       delete t.user
 
       return t
     })
 
-    return res.status(200).json({
+    return res.json({
       success: true,
-      response: result,
+      response: {
+        thoughts: payload,
+        pagination: {
+          current: page,
+          pages: totalPages
+        }
+      },
       message: 'All thoughts were successfully fetched'
     })
   } catch (err) {
-    console.error(err)
-    return res.status(500).json({ success: false, message: err.message })
+    next(err)
   }
 }
 
@@ -134,6 +137,7 @@ export const createThought = async (req, res, next) => {
     // Normalize before sending back
     const plain = created.toObject()
     plain.userId = plain.user?.toString() || null
+    plain.username = req.user?.username || null
     delete plain.user
 
     return res.status(201).json({

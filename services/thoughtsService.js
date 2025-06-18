@@ -39,21 +39,16 @@ const fileThoughtsModel = new ThoughtsModel(false)
 
 export const getPaginatedThoughts = async (page = 1, limit = 10) => {
   const skip = (page - 1) * limit
-
   const thoughts = await Thought.find()
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
+    .populate('user', 'username') // ← populate the username
 
   const total = await Thought.countDocuments()
-
   return {
     thoughts,
-    pagination: {
-      current: page,
-      total,
-      pages: Math.ceil(total / limit)
-    }
+    totalPages: Math.ceil(total / limit)
   }
 }
 
