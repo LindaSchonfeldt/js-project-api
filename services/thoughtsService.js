@@ -103,7 +103,7 @@ export const updateThought = async (id, message, userId) => {
   }
 
   // Make sure you're setting the message correctly
-  thought.message = message // This should be the actual message, not hardcoded
+  thought.message = message
   console.log('💾 Saving thought with message:', thought.message) // Debug line
 
   return await thought.save()

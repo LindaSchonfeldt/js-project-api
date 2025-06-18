@@ -2,37 +2,32 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 import User from '../models/User.js'
+import { ApiError } from '../utils/errors'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 export const authenticateUser = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '')
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Access token required'
-      })
+    // Get token from header
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new ApiError(401, 'Authorization token required')
     }
 
+    const token = authHeader.split(' ')[1]
+
+    // Verify token
     const decoded = jwt.verify(token, JWT_SECRET)
-    const user = await User.findById(decoded.userId)
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token'
-      })
-    }
+    // Attach user info to request
+    req.user = decoded // Should include user ID
 
-    req.user = user
     next()
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: 'Invalid token'
-    })
+    if (error.name === 'JsonWebTokenError') {
+      return next(new ApiError(401, 'Invalid token'))
+    }
+    next(error)
   }
 }
 

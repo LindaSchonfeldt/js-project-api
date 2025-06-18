@@ -196,7 +196,7 @@ export const deleteThought = async (req, res, next) => {
 
     // ✅ OWNERSHIP CHECK - Prevent unauthorized deletes
     if (thought.user.toString() !== userId) {
-      throw new AuthorizationError('You can only delete your own thoughts')
+      return res.status(403).json({ success: false, message: 'Not authorized' })
     }
 
     // Only delete if user owns it
