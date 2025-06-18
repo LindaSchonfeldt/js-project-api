@@ -117,27 +117,25 @@ export const getThoughtById = async (req, res, next) => {
 export const createThought = async (req, res, next) => {
   try {
     const { message } = req.body
-    // Generate your tags as you already do…
+    const { userId, username } = req.user || {} // ← pull both out
     const fileModel = new ThoughtsModel(false)
     const generatedTags = fileModel.identifyTags(message)
 
-    // Build the document payload—attach req.user.id if present
     const thoughtData = {
       message: message.trim(),
       hearts: 0,
       likes: [],
       tags: generatedTags,
       themeTags: generatedTags,
-      ...(req.user && req.user.id ? { user: req.user.id } : {})
+      ...(userId ? { user: userId } : {}) // ← attach userId
     }
 
-    // Persist to Mongo
     const created = await Thought.create(thoughtData)
-
-    // Normalize before sending back
     const plain = created.toObject()
+
+    // flatten into strings for the frontend
     plain.userId = plain.user?.toString() || null
-    plain.username = req.user?.username || null
+    plain.username = username || null
     delete plain.user
 
     return res.status(201).json({
