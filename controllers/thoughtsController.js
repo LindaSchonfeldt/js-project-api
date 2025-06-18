@@ -100,27 +100,30 @@ export const createThought = async (req, res, next) => {
     const { message } = req.body
 
     if (!message) {
-      throw new ApiError(400, 'Message is required')
+      throw new ValidationError('Message is required')
     }
 
+    // Create thought data object
     const thoughtData = {
       message,
       hearts: 0,
-      // If user is authenticated, associate the thought with them
-      ...(req.isAuthenticated && req.user ? { user: req.user.id } : {})
+      likes: [],
+      // Safely handle user ID for both authenticated and anonymous users
+      ...(req.user && req.user.id ? { user: req.user.id } : {})
     }
 
-    // Create thought (with or without user)
-    const newThought = await thoughtsService.createThought(message, req.user)
+    console.log('Creating thought with data:', thoughtData)
+
+    // Create thought in database
+    const thought = await Thought.create(thoughtData)
 
     res.status(201).json({
       success: true,
-      response: newThought,
-      message: req.isAuthenticated
-        ? 'Thought was successfully created'
-        : 'Anonymous thought was successfully created'
+      data: thought,
+      message: 'Thought created successfully'
     })
   } catch (error) {
+    console.error('CREATE THOUGHT ERROR:', error)
     next(error)
   }
 }

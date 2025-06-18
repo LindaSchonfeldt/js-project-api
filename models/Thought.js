@@ -27,13 +27,14 @@
 
 import mongoose from 'mongoose'
 
+// Make sure required fields have proper default values
 const thoughtSchema = new mongoose.Schema({
   message: {
     type: String,
-    required: [true, 'Message is required'],
-    minlength: [5, 'Message must be at least 5 characters'],
-    maxlength: [140, 'Message cannot exceed 140 characters'],
-    trim: true
+    required: true,
+    trim: true,
+    minlength: 5,
+    maxlength: 140
   },
   tags: [
     {
@@ -42,11 +43,15 @@ const thoughtSchema = new mongoose.Schema({
     }
   ],
   hearts: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: 0,
-    min: 0
+    type: Number,
+    default: 0
   },
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
