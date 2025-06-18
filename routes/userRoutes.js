@@ -3,24 +3,28 @@ import express from 'express'
 import {
   createThought,
   deleteThought,
-  getAllThoughts,
   updateThought
 } from '../controllers/thoughtsController.js'
-import { authenticateUser, login, signup } from '../middleware/auth.js'
+import {
+  loginUser,
+  registerUser,
+  getLikedThoughts
+} from '../controllers/userController.js'
+import { authenticateUser } from '../middleware/auth.js'
 
 const router = express.Router()
 
 // Auth routes (no authentication required)
-router.post('/login', login)
-router.post('/signup', signup)
+router.post('/login', loginUser)
+router.post('/signup', registerUser)
+
+// User's liked thoughts (authentication required)
+router.get('/liked-thoughts', authenticateUser, getLikedThoughts)
 
 // Thoughts routes under /users/thoughts (authentication required)
-router.get('/thoughts', authenticateUser, getAllThoughts)
 router.post('/thoughts', authenticateUser, createThought)
 
 router.put('/:id', authenticateUser, updateThought)
 router.delete('/:id', authenticateUser, deleteThought)
-// Note: The above routes assume that the authenticateUser middleware is defined
-// and properly checks for user authentication before allowing access to the thought operations.
 
 export default router

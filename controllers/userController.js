@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 import User from '../models/User.js'
+import Thought from '../models/Thought.js'
 import { ValidationError } from '../utils/errors.js'
 
 const JWT_SECRET = process.env.JWT_SECRET
@@ -86,6 +87,30 @@ export const loginUser = async (req, res, next) => {
         username: user.username
       },
       message: 'Login successful'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Get thoughts liked by the current user
+ * @route GET /users/liked-thoughts
+ * @access Private
+ */
+export const getLikedThoughts = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+
+    // Find thoughts that include this user's ID in their likes array
+    const likedThoughts = await Thought.find({ likes: userId }).sort({
+      createdAt: -1
+    })
+
+    res.json({
+      success: true,
+      data: likedThoughts,
+      count: likedThoughts.length
     })
   } catch (error) {
     next(error)

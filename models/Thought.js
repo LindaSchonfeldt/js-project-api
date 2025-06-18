@@ -42,7 +42,8 @@ const thoughtSchema = new mongoose.Schema({
     }
   ],
   hearts: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     default: 0,
     min: 0
   },

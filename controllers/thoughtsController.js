@@ -99,21 +99,15 @@ export const createThought = async (req, res, next) => {
   try {
     const { message } = req.body
 
-    // Validation
-    if (!message || typeof message !== 'string') {
-      throw new ValidationError('Message is required and must be a string')
+    if (!message) {
+      throw new ApiError(400, 'Message is required')
     }
 
-    if (message.length < 5 || message.length > 140) {
-      throw new ValidationError(
-        'Message must be between 5 and 140 characters',
-        {
-          field: 'message',
-          current: message.length,
-          min: 5,
-          max: 140
-        }
-      )
+    const thoughtData = {
+      message,
+      hearts: 0,
+      // If user is authenticated, associate the thought with them
+      ...(req.isAuthenticated && req.user ? { user: req.user.id } : {})
     }
 
     // Create thought (with or without user)
@@ -132,21 +126,42 @@ export const createThought = async (req, res, next) => {
 }
 
 export const likeThought = async (req, res, next) => {
-  const { id } = req.params
   try {
-    const thought = await thoughtsService.likeThought(id)
+    const { id } = req.params
+    const userId = req.isAuthenticated ? req.user.id : null
 
+    const thought = await Thought.findById(id)
     if (!thought) {
-      throw new NotFoundError('Thought')
+      throw new NotFoundError('Thought not found')
     }
 
-    res.status(200).json({
+    // For authenticated users: track specific user hearts
+    if (userId) {
+      // Check if user already liked this thought
+      const alreadyLiked = thought.hearts.includes(userId)
+
+      if (alreadyLiked) {
+        // Unlike: remove user from hearts array
+        thought.hearts = thought.hearts.filter((id) => id.toString() !== userId)
+        thought.hearts = thought.hearts.length
+      } else {
+        // Like: add user to hearts array
+        thought.hearts.push(userId)
+        thought.hearts = thought.hearts.length
+      }
+    } else {
+      // For anonymous users: just increment counter
+      thought.hearts += 1
+    }
+
+    await thought.save()
+
+    res.json({
       success: true,
-      response: thought,
-      message: 'Thought was successfully liked'
+      data: thought
     })
   } catch (error) {
-    next(error) // Let the error middleware handle it
+    next(error)
   }
 }
 
@@ -196,7 +211,7 @@ export const deleteThought = async (req, res, next) => {
 
     // ✅ OWNERSHIP CHECK - Prevent unauthorized deletes
     if (thought.user.toString() !== userId) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
+      throw new AuthorizationError('You can only delete your own thoughts')
     }
 
     // Only delete if user owns it

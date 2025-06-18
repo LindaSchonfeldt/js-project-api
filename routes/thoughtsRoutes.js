@@ -29,23 +29,24 @@
  * @updated June 2025
  */
 
-const express = require('express')
-const router = express.Router()
-const thoughtController = require('../controllers/thoughtController')
-const auth = require('../middleware/auth')
+import express from 'express';
+import * as thoughtController from '../controllers/thoughtsController.js';
+import { authenticateUser, optionalAuth } from '../middleware/auth.js';
+
+const router = express.Router();
 
 // Public routes
-router.get('/', thoughtController.getAllThoughts)
-router.get('/trending', thoughtController.getTrendingThoughts)
-router.get('/tag/:tag', thoughtController.getThoughtsByTag)
-router.get('/:id', thoughtController.getThoughtById)
+router.get('/', thoughtController.getAllThoughts);
+router.get('/trending', thoughtController.getTrendingThoughts);
+router.get('/tag/:tag', thoughtController.getThoughtsByTag);
+router.get('/:id', thoughtController.getThoughtById);
 
-// Mixed routes (optional authentication - allows both logged in and anonymous users)
-router.post('/', optionalAuth, thoughtController.createThought)
-router.post('/:id/like', optionalAuth, thoughtController.likeThought)
+// Mixed routes (optional authentication)
+router.post('/', optionalAuth, thoughtController.createThought);
+router.post('/:id/like', optionalAuth, thoughtController.likeThought);
 
-// Protected routes (authentication required)
-router.put('/:id', auth, thoughtController.updateThought)
-router.delete('/:id', auth, thoughtController.deleteThought)
+// Protected routes
+router.put('/:id', authenticateUser, thoughtController.updateThought);
+router.delete('/:id', authenticateUser, thoughtController.deleteThought);
 
-module.exports = router
+export default router;
