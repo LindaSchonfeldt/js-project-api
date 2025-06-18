@@ -33,10 +33,17 @@ const thoughtSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    minlength: 5,
-    maxlength: 140
+    minlength: 1,
+    maxlength: 280
   },
   tags: [
+    {
+      type: String,
+      lowercase: true
+    }
+  ],
+  // Add themeTags field for frontend compatibility
+  themeTags: [
     {
       type: String,
       lowercase: true

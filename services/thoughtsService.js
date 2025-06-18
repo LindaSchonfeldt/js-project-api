@@ -58,11 +58,11 @@ export const getPaginatedThoughts = async (page = 1, limit = 10) => {
 }
 
 export const createThought = async (message, user = null) => {
-  const tags = thoughtsModel.identifyTags(message)
+  const tags = thoughtsModel.identifyTags(message) // Tags are generated!
 
   const thoughtData = {
     message: message.trim(),
-    tags
+    tags // Tags are included in the data
   }
 
   // Add user info if authenticated

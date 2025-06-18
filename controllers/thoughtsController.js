@@ -64,8 +64,25 @@ export const getAllThoughts = async (req, res, next) => {
       throw new ValidationError('Limit must be between 1 and 100')
     }
 
-    // Use getPaginatedThoughts, not getAllThoughts
+    // Get paginated thoughts
     const result = await thoughtsService.getPaginatedThoughts(page, limit)
+
+    // Add themeTags for existing thoughts that don't have them
+    const fileThoughtsModel = new ThoughtsModel(false)
+    result.thoughts = result.thoughts.map((thought) => {
+      // Convert to plain object if it's a Mongoose document
+      const plainThought = thought.toObject ? thought.toObject() : thought
+
+      // If themeTags doesn't exist or is empty, copy from tags or generate new ones
+      if (!plainThought.themeTags || plainThought.themeTags.length === 0) {
+        plainThought.themeTags =
+          plainThought.tags && plainThought.tags.length > 0
+            ? [...plainThought.tags]
+            : fileThoughtsModel.identifyTags(plainThought.message)
+      }
+
+      return plainThought
+    })
 
     res.status(200).json({
       success: true,
@@ -84,9 +101,22 @@ export const getThoughtById = async (req, res, next) => {
     if (!thought) {
       throw new NotFoundError('Thought not found')
     }
+
+    // Convert to plain object
+    const plainThought = thought.toObject ? thought.toObject() : thought
+
+    // Add themeTags if missing
+    if (!plainThought.themeTags || plainThought.themeTags.length === 0) {
+      const fileThoughtsModel = new ThoughtsModel(false)
+      plainThought.themeTags =
+        plainThought.tags && plainThought.tags.length > 0
+          ? [...plainThought.tags]
+          : fileThoughtsModel.identifyTags(plainThought.message)
+    }
+
     res.status(200).json({
       success: true,
-      response: thought,
+      response: plainThought,
       message: 'Thought was successfully fetched'
     })
   } catch (error) {
@@ -99,22 +129,21 @@ export const createThought = async (req, res, next) => {
   try {
     const { message } = req.body
 
-    if (!message) {
-      throw new ValidationError('Message is required')
-    }
+    // Generate tags using the existing identifyTags method
+    const fileThoughtsModel = new ThoughtsModel(false)
+    const generatedTags = fileThoughtsModel.identifyTags(message)
 
-    // Create thought data object
+    // This local object now includes both tags and themeTags
     const thoughtData = {
       message,
       hearts: 0,
       likes: [],
-      // Safely handle user ID for both authenticated and anonymous users
+      tags: generatedTags, // Keep original tags field
+      themeTags: generatedTags, // Add themeTags field for frontend
       ...(req.user && req.user.id ? { user: req.user.id } : {})
     }
 
-    console.log('Creating thought with data:', thoughtData)
-
-    // Create thought in database
+    // Create the thought directly with the complete data
     const thought = await Thought.create(thoughtData)
 
     res.status(201).json({
@@ -123,7 +152,6 @@ export const createThought = async (req, res, next) => {
       message: 'Thought created successfully'
     })
   } catch (error) {
-    console.error('CREATE THOUGHT ERROR:', error)
     next(error)
   }
 }
@@ -138,20 +166,21 @@ export const likeThought = async (req, res, next) => {
       throw new NotFoundError('Thought not found')
     }
 
-    // For authenticated users: track specific user hearts
+    // For authenticated users: track specific users
     if (userId) {
       // Check if user already liked this thought
-      const alreadyLiked = thought.hearts.includes(userId)
+      const alreadyLiked = thought.likes.some((id) => id.toString() === userId)
 
       if (alreadyLiked) {
-        // Unlike: remove user from hearts array
-        thought.hearts = thought.hearts.filter((id) => id.toString() !== userId)
-        thought.hearts = thought.hearts.length
+        // Unlike: remove user from likes array
+        thought.likes = thought.likes.filter((id) => id.toString() !== userId)
       } else {
-        // Like: add user to hearts array
-        thought.hearts.push(userId)
-        thought.hearts = thought.hearts.length
+        // Like: add user to likes array
+        thought.likes.push(userId)
       }
+
+      // Update hearts count to match likes array length
+      thought.hearts = thought.likes.length
     } else {
       // For anonymous users: just increment counter
       thought.hearts += 1
