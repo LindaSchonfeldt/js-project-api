@@ -58,17 +58,17 @@ export const getAllThoughts = async (req, res, next) => {
     result.thoughts = result.thoughts.map((doc) => {
       const t = doc.toObject ? doc.toObject() : doc
 
-      // ensure themeTags
+      // Ensure themeTags
       if (!t.themeTags?.length) {
         t.themeTags = t.tags?.length
           ? [...t.tags]
           : tagger.identifyTags(t.message)
       }
 
-      // ADD THIS: normalize user → userId
+      // Normalize user → userId
       t.userId = t.user?.toString() || null
 
-      // optionally delete t.user
+      // Optionally delete t.user
       delete t.user
 
       return t
