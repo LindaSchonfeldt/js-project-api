@@ -95,12 +95,6 @@ app.use('/thoughts', thoughtsRoutes)
 app.use('/tags', tagsRoutes)
 app.use('/users', userRoutes)
 
-// Debugging middleware
-app.use((req, res, next) => {
-  console.log(`🔍 Unmatched request: ${req.method} ${req.url}`)
-  next()
-})
-
 // API documentation endpoint
 app.get('/', (req, res) => {
   const endpoints = listEndpoints(app)
@@ -132,6 +126,12 @@ app.get('/health', async (req, res) => {
       timestamp: new Date()
     })
   }
+})
+
+// Debugging middleware
+app.use((req, res, next) => {
+  console.log(`🔍 Unmatched request: ${req.method} ${req.url}`)
+  next()
 })
 
 // Error handling middleware (after routes, before server start)
