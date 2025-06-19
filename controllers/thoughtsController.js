@@ -48,11 +48,14 @@ import * as thoughtsService from '../services/thoughtsService.js'
  */
 
 export const getAllThoughts = async (req, res, next) => {
-  const page  = parseInt(req.query.page,  10) || 1
+  const page = parseInt(req.query.page, 10) || 1
   const limit = parseInt(req.query.limit, 10) || 10
 
   try {
-    const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(page, limit)
+    const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(
+      page,
+      limit
+    )
     const tagger = new ThoughtsModel(false)
 
     const payload = thoughts.map((doc) => {
@@ -220,31 +223,59 @@ export const updateThought = async (req, res, next) => {
 }
 
 export const deleteThought = async (req, res, next) => {
-  const { id } = req.params
-  const userId = req.user?.id // ✅ Add this line (was missing)
-
   try {
-    const thought = await thoughtsService.getThoughtById(id) // Get thought first
+    const { id } = req.params
+    const userId = req.user ? req.user.id : null
+
+    // Find the thought
+    const thought = await Thought.findById(id)
 
     if (!thought) {
-      throw new NotFoundError('Thought not found')
+      return res.status(404).json({
+        success: false,
+        message: 'Thought not found'
+      })
     }
 
-    // ✅ OWNERSHIP CHECK - Prevent unauthorized deletes
-    if (thought.user.toString() !== userId) {
-      throw new AuthorizationError('You can only delete your own thoughts')
+    // Much more defensive handling of thought.user
+    let thoughtUserId = null
+
+    // Safely extract user ID without risking null/undefined errors
+    if (thought.user) {
+      try {
+        thoughtUserId =
+          typeof thought.user.toString === 'function'
+            ? thought.user.toString()
+            : String(thought.user)
+      } catch (e) {
+        console.error('Error converting thought.user to string:', e)
+      }
     }
 
-    // Only delete if user owns it
-    await thoughtsService.deleteThought(id)
+    // Authorization checks with proper null handling
+    if (thoughtUserId && userId && thoughtUserId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own thoughts'
+      })
+    }
 
-    res.status(200).json({
+    // Delete the thought
+    await Thought.findByIdAndDelete(id)
+
+    return res.status(200).json({
       success: true,
-      response: thought,
-      message: 'Thought was successfully deleted'
+      message: 'Thought deleted successfully'
     })
   } catch (error) {
-    next(error)
+    console.error('Error deleting thought:', error)
+
+    // Better error handling
+    return res.status(500).json({
+      success: false,
+      message: 'Error deleting thought',
+      error: error.message
+    })
   }
 }
 
