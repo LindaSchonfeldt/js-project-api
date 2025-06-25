@@ -5,7 +5,7 @@ import {
   ValidationError,
   NotFoundError,
   AuthorizationError
-} from '../errors.js' // ← bring in your custom errors
+} from '../utils/errors.js'
 
 /**
  * THOUGHTS CONTROLLER
