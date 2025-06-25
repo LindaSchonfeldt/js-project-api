@@ -1,6 +1,11 @@
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 import * as thoughtsService from '../services/thoughtsService.js'
+import {
+  ValidationError,
+  NotFoundError,
+  AuthorizationError
+} from '../errors.js' // ← bring in your custom errors
 
 /**
  * THOUGHTS CONTROLLER
@@ -192,33 +197,29 @@ export const likeThought = async (req, res, next) => {
 export const updateThought = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { message } = req.body
+    // Pull in the full payload
+    const { message, tags, preserveTags } = req.body
     const userId = req.user?.id
 
-    console.log('🔧 Backend update called:', { id, message, userId }) // Debug line
-
-    // Validation
+    // Now this will use the real ValidationError
     if (!message || message.trim().length < 5) {
       throw new ValidationError('Message is too short (min 5 characters)')
     }
 
-    // Your existing update logic...
-    console.log('✅ About to update thought with message:', message) // Debug line
-
-    // Make sure you're actually using the 'message' parameter
-    const updatedThought = await thoughtsService.updateThought(
+    // Hand the entire object through to your service
+    const updated = await thoughtsService.updateThought(
       id,
-      message,
+      { message, tags, preserveTags },
       userId
     )
 
-    res.json({
+    return res.json({
       success: true,
-      response: updatedThought,
+      response: updated,
       message: 'Thought was successfully updated'
     })
-  } catch (error) {
-    next(error)
+  } catch (err) {
+    next(err)
   }
 }
 

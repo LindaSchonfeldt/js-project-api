@@ -84,24 +84,27 @@ export const likeThought = async (id) => {
   )
 }
 
-export const updateThought = async (id, message, userId) => {
-  console.log('💾 Service updateThought:', { id, message, userId }) // Debug line
-
+export const updateThought = async (
+  id,
+  { message, tags, preserveTags },
+  userId
+) => {
   const thought = await Thought.findById(id)
-
-  if (!thought) {
-    throw new NotFoundError('Thought not found')
-  }
-
-  if (thought.user.toString() !== userId) {
+  if (!thought) throw new NotFoundError('Thought not found')
+  if (String(thought.user) !== userId)
     throw new AuthorizationError('You can only edit your own thoughts')
+
+  thought.message = message
+  if (preserveTags) {
+    // Keep whatever tags client sent
+    thought.tags = Array.isArray(tags) ? tags : thought.tags
+  } else {
+    // Re‐auto-tag from the new message
+    thought.tags = new ThoughtsModel(false).identifyTags(message)
   }
 
-  // Make sure you're setting the message correctly
-  thought.message = message
-  console.log('💾 Saving thought with message:', thought.message) // Debug line
-
-  return await thought.save()
+  await thought.save()
+  return thought.toObject()
 }
 
 export const deleteThought = async (id, userId) => {
