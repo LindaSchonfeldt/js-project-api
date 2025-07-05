@@ -29,6 +29,7 @@ import mongoose from 'mongoose'
 
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
+import { NotFoundError, AuthorizationError } from '../utils/errors.js'
 
 // Choose storage type based on environment
 const useDatabase = process.env.USE_DATABASE === 'true' || false
@@ -84,27 +85,40 @@ export const likeThought = async (id) => {
   )
 }
 
-export const updateThought = async (
-  id,
-  { message, tags, preserveTags },
-  userId
-) => {
-  const thought = await Thought.findById(id)
-  if (!thought) throw new NotFoundError('Thought not found')
-  if (String(thought.user) !== userId)
-    throw new AuthorizationError('You can only edit your own thoughts')
+export const updateThought = async (id, updateData, userId) => {
+  try {
+    const { message, tags, preserveTags } = updateData
 
-  thought.message = message
-  if (preserveTags) {
-    // Keep whatever tags client sent
-    thought.tags = Array.isArray(tags) ? tags : thought.tags
-  } else {
-    // Re‐auto-tag from the new message
-    thought.tags = new ThoughtsModel(false).identifyTags(message)
+    // Find the thought first
+    const thought = await Thought.findById(id)
+    if (!thought) {
+      throw new NotFoundError('Thought not found')
+    }
+
+    // Authorization check
+    if (thought.user && userId && thought.user.toString() !== userId) {
+      throw new AuthorizationError('You can only update your own thoughts')
+    }
+
+    // Prepare update data
+    const updatedTags = preserveTags ? thought.tags : tags || []
+
+    // Update with findByIdAndUpdate
+    const updated = await Thought.findByIdAndUpdate(
+      id,
+      {
+        message: message.trim(),
+        tags: updatedTags
+        // Don't update other fields like hearts, user, etc.
+      },
+      { new: true } // Return updated document
+    )
+
+    return updated
+  } catch (error) {
+    console.error('Error updating thought:', error)
+    throw error
   }
-
-  await thought.save()
-  return thought.toObject()
 }
 
 export const deleteThought = async (id, userId) => {

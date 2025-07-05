@@ -35,19 +35,18 @@ export const registerUser = async (req, res, next) => {
 
     // Create JWT token
     const token = jwt.sign(
-      { userId: user._id, username: user.username },
+      { userId: user._id.toString(), username: user.username },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      token: token,
-      user: {
-        id: user._id,
-        username: user.username
+      response: {
+        user: { id: user._id.toString(), username: user.username },
+        token
       },
-      message: 'User successfully registered'
+      message: 'User registered successfully'
     })
   } catch (error) {
     next(error)
