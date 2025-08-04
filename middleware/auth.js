@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+
 import { ApiError } from '../utils/errors.js'
 
 const JWT_SECRET = process.env.JWT_SECRET
