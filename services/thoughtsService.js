@@ -47,9 +47,13 @@ export const getPaginatedThoughts = async (
 
   let query = Thought.find().sort({ createdAt: -1 }).skip(skip).limit(limit)
 
-  // ✅ FIX: Add user population
+  // ✅ ENHANCED: Better population with error handling
   if (populateUser) {
-    query = query.populate('user', 'username')
+    query = query.populate({
+      path: 'user',
+      select: 'username',
+      options: { strictPopulate: false } // Don't fail if user doesn't exist
+    })
   }
 
   const thoughts = await query
@@ -83,7 +87,11 @@ export const getThoughtById = async (id, populateUser = false) => {
   let query = Thought.findById(id)
 
   if (populateUser) {
-    query = query.populate('user', 'username')
+    query = query.populate({
+      path: 'user',
+      select: 'username',
+      options: { strictPopulate: false } // Don't fail if user doesn't exist
+    })
   }
 
   return await query
@@ -107,8 +115,12 @@ export const updateThought = async (id, updateData, userId) => {
       throw new NotFoundError('Thought not found')
     }
 
-    // Authorization check
-    if (thought.user && userId && thought.user.toString() !== userId) {
+    // ✅ ENHANCED: Better authorization check
+    if (!thought.user) {
+      throw new AuthorizationError('Anonymous thoughts cannot be updated')
+    }
+
+    if (thought.user.toString() !== userId) {
       throw new AuthorizationError('You can only update your own thoughts')
     }
 
@@ -121,9 +133,12 @@ export const updateThought = async (id, updateData, userId) => {
       {
         message: message.trim(),
         tags: updatedTags
-        // Don't update other fields like hearts, user, etc.
       },
-      { new: true } // Return updated document
+      {
+        new: true,
+        // ✅ ENHANCED: Populate user data in response
+        populate: { path: 'user', select: 'username' }
+      }
     )
 
     return updated
@@ -138,23 +153,24 @@ export const deleteThought = async (id, userId) => {
 
   const thought = await Thought.findById(id)
   console.log('Found thought:', {
-    id: thought._id,
-    user: thought.user,
-    userString: thought.user?.toString()
+    id: thought?._id,
+    user: thought?.user,
+    userString: thought?.user?.toString()
   })
 
   if (!thought) {
     throw new NotFoundError('Thought not found')
   }
 
-  // Debug the comparison
-  console.log('Comparing:', {
-    thoughtUser: thought.user?.toString(),
-    requestUserId: userId,
-    areEqual: thought.user?.toString() === userId
-  })
+  // ✅ ENHANCED: Better authorization logic
+  if (!thought.user) {
+    // Anonymous thoughts cannot be deleted by any user
+    throw new AuthorizationError('Anonymous thoughts cannot be deleted')
+  }
 
-  if (!thought.user || thought.user.toString() !== userId) {
+  // ✅ ENHANCED: Handle potential null/undefined user references
+  const thoughtUserId = thought.user.toString()
+  if (thoughtUserId !== userId) {
     throw new AuthorizationError('You can only delete your own thoughts')
   }
 

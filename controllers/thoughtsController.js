@@ -1,11 +1,7 @@
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 import * as thoughtsService from '../services/thoughtsService.js'
-import {
-  AuthorizationError,
-  NotFoundError,
-  ValidationError
-} from '../utils/errors.js'
+import { AuthorizationError, NotFoundError, ValidationError } from '../utils/errors.js'
 
 /**
  * THOUGHTS CONTROLLER
@@ -242,7 +238,7 @@ export const updateThought = async (req, res, next) => {
 export const deleteThought = async (req, res, next) => {
   try {
     const { id } = req.params
-    const userId = req.user ? req.user.userId : null
+    const userId = req.user?.userId
 
     console.log('Delete request - User ID:', userId, 'Thought ID:', id)
 
@@ -253,7 +249,7 @@ export const deleteThought = async (req, res, next) => {
       })
     }
 
-    // Call the service method
+    // ✅ FIX: Use the service layer (like other endpoints do)
     await thoughtsService.deleteThought(id, userId)
 
     return res.status(200).json({
