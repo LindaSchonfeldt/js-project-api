@@ -118,11 +118,13 @@ export const getThoughtById = async (req, res, next) => {
   }
 }
 
-// Example for createThought with validation
 export const createThought = async (req, res, next) => {
   try {
     const { message } = req.body
-    const { userId, username } = req.user || {} // ← pull both out
+    const { userId, username } = req.user || {}
+
+    console.log('Create request - User ID:', userId, 'Username:', username)
+
     const fileModel = new ThoughtsModel(false)
     const generatedTags = fileModel.identifyTags(message)
 
@@ -132,7 +134,7 @@ export const createThought = async (req, res, next) => {
       likes: [],
       tags: generatedTags,
       themeTags: generatedTags,
-      ...(userId ? { user: userId } : {}) // ← attach userId
+      ...(userId ? { user: userId } : {})
     }
 
     const created = await Thought.create(thoughtData)
@@ -197,16 +199,15 @@ export const likeThought = async (req, res, next) => {
 export const updateThought = async (req, res, next) => {
   try {
     const { id } = req.params
-    // Pull in the full payload
     const { message, tags, preserveTags } = req.body
-    const userId = req.user?.id
+    const userId = req.user?.userId
 
-    // Now this will use the real ValidationError
+    console.log('Update request - User ID:', userId, 'Thought ID:', id)
+
     if (!message || message.trim().length < 5) {
       throw new ValidationError('Message is too short (min 5 characters)')
     }
 
-    // Hand the entire object through to your service
     const updated = await thoughtsService.updateThought(
       id,
       { message, tags, preserveTags },
@@ -226,7 +227,9 @@ export const updateThought = async (req, res, next) => {
 export const deleteThought = async (req, res, next) => {
   try {
     const { id } = req.params
-    const userId = req.user ? req.user.id : null
+    const userId = req.user ? req.user.userId : null
+
+    console.log('Delete request - User ID:', userId, 'Thought ID:', id)
 
     if (!userId) {
       return res.status(401).json({
