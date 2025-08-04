@@ -29,7 +29,7 @@ import mongoose from 'mongoose'
 
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
-import { NotFoundError, AuthorizationError } from '../utils/errors.js'
+import { AuthorizationError, NotFoundError } from '../utils/errors.js'
 
 // Choose storage type based on environment
 const useDatabase = process.env.USE_DATABASE === 'true' || false
@@ -128,7 +128,13 @@ export const deleteThought = async (id, userId) => {
     throw new NotFoundError('Thought not found')
   }
 
-  // Double-check ownership at service level too
+  // ✅ SECURE: Proper handling of anonymous thoughts
+  if (!thought.user) {
+    // Anonymous thoughts cannot be deleted by any user
+    throw new AuthorizationError('Anonymous thoughts cannot be deleted')
+  }
+
+  // ✅ SECURE: Safe comparison for user-owned thoughts
   if (thought.user.toString() !== userId) {
     throw new AuthorizationError('You can only delete your own thoughts')
   }

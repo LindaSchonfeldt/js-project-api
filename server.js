@@ -163,7 +163,6 @@ app.use((req, res) => {
   })
 })
 
-// THEN connect and start server
 mongoose
   .connect(mongoURL)
   .then(async () => {

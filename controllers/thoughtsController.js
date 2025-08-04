@@ -2,9 +2,9 @@ import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 import * as thoughtsService from '../services/thoughtsService.js'
 import {
-  ValidationError,
+  AuthorizationError,
   NotFoundError,
-  AuthorizationError
+  ValidationError
 } from '../utils/errors.js'
 
 /**
@@ -228,55 +228,22 @@ export const deleteThought = async (req, res, next) => {
     const { id } = req.params
     const userId = req.user ? req.user.id : null
 
-    // Find the thought
-    const thought = await Thought.findById(id)
-
-    if (!thought) {
-      return res.status(404).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        message: 'Thought not found'
+        message: 'Authentication required to delete thoughts'
       })
     }
 
-    // Much more defensive handling of thought.user
-    let thoughtUserId = null
-
-    // Safely extract user ID without risking null/undefined errors
-    if (thought.user) {
-      try {
-        thoughtUserId =
-          typeof thought.user.toString === 'function'
-            ? thought.user.toString()
-            : String(thought.user)
-      } catch (e) {
-        console.error('Error converting thought.user to string:', e)
-      }
-    }
-
-    // Authorization checks with proper null handling
-    if (thoughtUserId && userId && thoughtUserId !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only delete your own thoughts'
-      })
-    }
-
-    // Delete the thought
-    await Thought.findByIdAndDelete(id)
+    // Call the service method
+    await thoughtsService.deleteThought(id, userId)
 
     return res.status(200).json({
       success: true,
       message: 'Thought deleted successfully'
     })
   } catch (error) {
-    console.error('Error deleting thought:', error)
-
-    // Better error handling
-    return res.status(500).json({
-      success: false,
-      message: 'Error deleting thought',
-      error: error.message
-    })
+    next(error)
   }
 }
 
