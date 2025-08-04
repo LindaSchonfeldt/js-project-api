@@ -109,18 +109,26 @@ export const updateThought = async (id, updateData, userId) => {
   try {
     const { message, tags, preserveTags } = updateData
 
-    // Find the thought first
-    const thought = await Thought.findById(id)
+    const thought = await Thought.findById(id).populate('user', 'username')
+
     if (!thought) {
       throw new NotFoundError('Thought not found')
     }
 
-    // ✅ ENHANCED: Better authorization check
+    console.log('Update authorization check:', {
+      thoughtUser: thought.user,
+      thoughtUserId: thought.user?._id?.toString() || thought.user?.toString(),
+      requestUserId: userId,
+      hasUser: !!thought.user
+    })
+
     if (!thought.user) {
       throw new AuthorizationError('Anonymous thoughts cannot be updated')
     }
 
-    if (thought.user.toString() !== userId) {
+    const thoughtUserId =
+      thought.user._id?.toString() || thought.user.toString()
+    if (thoughtUserId !== userId) {
       throw new AuthorizationError('You can only update your own thoughts')
     }
 
@@ -136,7 +144,6 @@ export const updateThought = async (id, updateData, userId) => {
       },
       {
         new: true,
-        // ✅ ENHANCED: Populate user data in response
         populate: { path: 'user', select: 'username' }
       }
     )
@@ -151,25 +158,35 @@ export const updateThought = async (id, updateData, userId) => {
 export const deleteThought = async (id, userId) => {
   console.log('Service deleteThought called with:', { id, userId })
 
-  const thought = await Thought.findById(id)
+  const thought = await Thought.findById(id).populate('user', 'username')
+
   console.log('Found thought:', {
     id: thought?._id,
     user: thought?.user,
-    userString: thought?.user?.toString()
+    userString: thought?.user?.toString(),
+    hasUser: !!thought?.user
   })
 
   if (!thought) {
     throw new NotFoundError('Thought not found')
   }
 
-  // ✅ ENHANCED: Better authorization logic
+  const thoughtUserId =
+    thought.user?._id?.toString() || thought.user?.toString()
+
+  console.log('Authorization check:', {
+    thoughtUserId,
+    requestUserId: userId,
+    hasUser: !!thought.user,
+    userType: typeof thought.user,
+    areEqual: thoughtUserId === userId
+  })
+
   if (!thought.user) {
-    // Anonymous thoughts cannot be deleted by any user
+    // Truly anonymous thoughts (no user field at all)
     throw new AuthorizationError('Anonymous thoughts cannot be deleted')
   }
 
-  // ✅ ENHANCED: Handle potential null/undefined user references
-  const thoughtUserId = thought.user.toString()
   if (thoughtUserId !== userId) {
     throw new AuthorizationError('You can only delete your own thoughts')
   }
