@@ -158,7 +158,7 @@ export const createThought = async (req, res, next) => {
 export const likeThought = async (req, res, next) => {
   try {
     const { id } = req.params
-    const userId = req.isAuthenticated ? req.user.id : null
+    const userId = req.isAuthenticated ? req.user.userId : null
 
     const thought = await Thought.findById(id)
     if (!thought) {
