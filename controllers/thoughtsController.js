@@ -65,15 +65,14 @@ export const getAllThoughts = async (req, res, next) => {
 
     const payload = thoughts.map((doc) => {
       const t = doc.toObject()
-      // themeTags logic…
+
       if (!t.themeTags?.length) {
         t.themeTags = t.tags?.length
           ? [...t.tags]
           : tagger.identifyTags(t.message)
       }
 
-      // Flatten user → userId + username
-      t.userId = t.user?._id.toString() || null
+      t.userId = t.user?.toString() || null // Remove ._id
       t.username = t.user?.username || null
       delete t.user
 
@@ -106,6 +105,7 @@ export const getThoughtById = async (req, res, next) => {
     }
 
     plain.userId = plain.user?.toString() || null
+    plain.username = plain.user?.username || null
     delete plain.user
 
     return res.status(200).json({
