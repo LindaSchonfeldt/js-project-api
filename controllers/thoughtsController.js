@@ -57,9 +57,11 @@ export const getAllThoughts = async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 10
 
   try {
+    // ✅ FIX: Populate user data to get username
     const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(
       page,
-      limit
+      limit,
+      true // Add populate flag
     )
     const tagger = new ThoughtsModel(false)
 
@@ -72,8 +74,13 @@ export const getAllThoughts = async (req, res, next) => {
           : tagger.identifyTags(t.message)
       }
 
-      t.userId = t.user?.toString() || null // Remove ._id
-      t.username = t.user?.username || null
+      if (t.user) {
+        t.userId = t.user._id?.toString() || t.user.toString()
+        t.username = t.user.username || null
+      } else {
+        t.userId = null
+        t.username = null
+      }
       delete t.user
 
       return t
@@ -140,8 +147,7 @@ export const createThought = async (req, res, next) => {
     const created = await Thought.create(thoughtData)
     const plain = created.toObject()
 
-    // flatten into strings for the frontend
-    plain.userId = plain.user?.toString() || null
+    plain.userId = userId || null
     plain.username = username || null
     delete plain.user
 

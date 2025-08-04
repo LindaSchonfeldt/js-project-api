@@ -38,19 +38,25 @@ const thoughtsModel = new ThoughtsModel(useDatabase)
 // Create an instance for tag identification
 const fileThoughtsModel = new ThoughtsModel(false)
 
-export const getPaginatedThoughts = async (page = 1, limit = 10) => {
+export const getPaginatedThoughts = async (
+  page = 1,
+  limit = 10,
+  populateUser = false
+) => {
   const skip = (page - 1) * limit
-  const thoughts = await Thought.find()
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .populate('user', 'username') // ← populate the username
 
-  const total = await Thought.countDocuments()
-  return {
-    thoughts,
-    totalPages: Math.ceil(total / limit)
+  let query = Thought.find().sort({ createdAt: -1 }).skip(skip).limit(limit)
+
+  // ✅ FIX: Add user population
+  if (populateUser) {
+    query = query.populate('user', 'username')
   }
+
+  const thoughts = await query
+  const totalThoughts = await Thought.countDocuments()
+  const totalPages = Math.ceil(totalThoughts / limit)
+
+  return { thoughts, totalPages }
 }
 
 export const createThought = async (message, user = null) => {
