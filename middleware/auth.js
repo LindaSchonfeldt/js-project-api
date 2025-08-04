@@ -37,7 +37,8 @@ export const optionalAuth = (req, res, next) => {
   try {
     const { userId, username } = jwt.verify(authHeader.slice(7), JWT_SECRET)
     req.isAuthenticated = true
-    req.user = { id: userId, username }
+    // ✅ FIX: Keep original field names from JWT
+    req.user = { userId, username } // Don't map to { id: userId, username }
   } catch {
     req.isAuthenticated = false
     req.user = null

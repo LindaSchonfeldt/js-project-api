@@ -101,8 +101,8 @@ export const getAllThoughts = async (req, res, next) => {
 
 export const getThoughtById = async (req, res, next) => {
   try {
-    const thought = await thoughtsService.getThoughtById(req.params.id)
-    if (!thought) throw new Error('Not Found')
+    const thought = await thoughtsService.getThoughtById(req.params.id, true)
+    if (!thought) throw new NotFoundError('Thought not found')
 
     const plain = thought.toObject ? thought.toObject() : thought
     if (!plain.themeTags?.length) {
@@ -111,8 +111,20 @@ export const getThoughtById = async (req, res, next) => {
         : new ThoughtsModel(false).identifyTags(plain.message)
     }
 
-    plain.userId = plain.user?.toString() || null
-    plain.username = plain.user?.username || null
+    if (plain.user) {
+      if (plain.user.username) {
+        // User is populated
+        plain.userId = plain.user._id.toString()
+        plain.username = plain.user.username
+      } else {
+        // User is just an ObjectId
+        plain.userId = plain.user.toString()
+        plain.username = null
+      }
+    } else {
+      plain.userId = null
+      plain.username = null
+    }
     delete plain.user
 
     return res.status(200).json({
@@ -164,6 +176,7 @@ export const createThought = async (req, res, next) => {
 export const likeThought = async (req, res, next) => {
   try {
     const { id } = req.params
+    // ✅ FIX: Use correct field name
     const userId = req.isAuthenticated ? req.user.userId : null
 
     const thought = await Thought.findById(id)
@@ -173,21 +186,16 @@ export const likeThought = async (req, res, next) => {
 
     // For authenticated users: track specific users
     if (userId) {
-      // Check if user already liked this thought
       const alreadyLiked = thought.likes.some((id) => id.toString() === userId)
 
       if (alreadyLiked) {
-        // Unlike: remove user from likes array
         thought.likes = thought.likes.filter((id) => id.toString() !== userId)
       } else {
-        // Like: add user to likes array
         thought.likes.push(userId)
       }
 
-      // Update hearts count to match likes array length
       thought.hearts = thought.likes.length
     } else {
-      // For anonymous users: just increment counter
       thought.hearts += 1
     }
 
@@ -195,7 +203,8 @@ export const likeThought = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: thought
+      data: thought,
+      hearts: thought.hearts // ✅ Add hearts to response
     })
   } catch (error) {
     next(error)

@@ -79,8 +79,14 @@ export const createThought = async (message, user = null) => {
   return await thought.save()
 }
 
-export const getThoughtById = async (id) => {
-  return await Thought.findById(id)
+export const getThoughtById = async (id, populateUser = false) => {
+  let query = Thought.findById(id)
+
+  if (populateUser) {
+    query = query.populate('user', 'username')
+  }
+
+  return await query
 }
 
 export const likeThought = async (id) => {
