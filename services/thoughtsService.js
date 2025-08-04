@@ -122,20 +122,27 @@ export const updateThought = async (id, updateData, userId) => {
 }
 
 export const deleteThought = async (id, userId) => {
+  console.log('Service deleteThought called with:', { id, userId })
+
   const thought = await Thought.findById(id)
+  console.log('Found thought:', {
+    id: thought._id,
+    user: thought.user,
+    userString: thought.user?.toString()
+  })
 
   if (!thought) {
     throw new NotFoundError('Thought not found')
   }
 
-  // ✅ SECURE: Proper handling of anonymous thoughts
-  if (!thought.user) {
-    // Anonymous thoughts cannot be deleted by any user
-    throw new AuthorizationError('Anonymous thoughts cannot be deleted')
-  }
+  // Debug the comparison
+  console.log('Comparing:', {
+    thoughtUser: thought.user?.toString(),
+    requestUserId: userId,
+    areEqual: thought.user?.toString() === userId
+  })
 
-  // ✅ SECURE: Safe comparison for user-owned thoughts
-  if (thought.user.toString() !== userId) {
+  if (!thought.user || thought.user.toString() !== userId) {
     throw new AuthorizationError('You can only delete your own thoughts')
   }
 

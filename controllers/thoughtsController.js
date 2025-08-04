@@ -311,3 +311,21 @@ export const autoTagThoughts = async (req, res, next) => {
     next(error)
   }
 }
+
+// Add this temporary debug endpoint to thoughtsController.js
+export const debugThought = async (req, res, next) => {
+  try {
+    const thought = await Thought.findById(req.params.id)
+    console.log('Raw thought from DB:', JSON.stringify(thought, null, 2))
+
+    res.json({
+      success: true,
+      raw: thought,
+      userField: thought.user,
+      userType: typeof thought.user,
+      userString: thought.user?.toString()
+    })
+  } catch (error) {
+    next(error)
+  }
+}

@@ -44,3 +44,22 @@ export const optionalAuth = (req, res, next) => {
   }
   return next()
 }
+
+/**
+ * Token authentication middleware - verifies token and attaches user to request
+ */
+export const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.sendStatus(401)
+  }
+
+  const token = authHeader.slice(7) // drop "Bearer "
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403)
+
+    console.log('JWT decoded user:', user)
+    req.user = user
+    next()
+  })
+}
