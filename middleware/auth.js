@@ -16,8 +16,7 @@ export const authenticateUser = (req, res, next) => {
   const token = authHeader.slice(7) // drop "Bearer "
   try {
     const { userId, username } = jwt.verify(token, JWT_SECRET)
-    // map the JWT payload into the shape your controllers expect:
-    req.user = { id: userId, username }
+    req.user = { userId, username }
     return next()
   } catch (err) {
     return next(new ApiError(401, 'Invalid or expired token'))
