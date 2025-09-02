@@ -9,11 +9,7 @@
 import express from 'express'
 
 import { getLikedThoughts } from '../controllers/thoughtsController.js'
-import {
-  createThought,
-  deleteThought,
-  updateThought
-} from '../controllers/thoughtsController.js'
+import { createThought, deleteThought, updateThought } from '../controllers/thoughtsController.js'
 import { loginUser, registerUser } from '../controllers/userController.js'
 import { authenticateUser } from '../middleware/auth.js'
 
