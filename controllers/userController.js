@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 import Thought from '../models/Thought.js'
 import User from '../models/User.js'
@@ -99,19 +100,44 @@ export const loginUser = async (req, res, next) => {
  */
 export const getLikedThoughts = async (req, res, next) => {
   try {
-    const userId = req.user.userId
+    const userId = req.user?.userId
+    console.log('GET LIKED THOUGHTS REQUEST:', { userId })
 
-    // Find thoughts that include this user's ID in their likes array
-    const likedThoughts = await Thought.find({ likes: userId }).sort({
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      })
+    }
+
+    // Option 1: Try this simpler query first
+    const objectId = new mongoose.Types.ObjectId(userId)
+    let likedThoughts = await Thought.find({ likes: objectId }).sort({
       createdAt: -1
     })
 
-    res.json({
+    // If that didn't work, try a more flexible query
+    if (likedThoughts.length === 0) {
+      likedThoughts = await Thought.find({
+        likes: { $in: [userId, objectId] }
+      }).sort({ createdAt: -1 })
+
+      console.log(
+        `Found ${likedThoughts.length} liked thoughts with flexible query`
+      )
+    }
+
+    console.log(
+      `Found ${likedThoughts.length} liked thoughts for user ${userId}`
+    )
+
+    return res.json({
       success: true,
-      data: likedThoughts,
-      count: likedThoughts.length
+      response: likedThoughts,
+      message: ''
     })
-  } catch (error) {
-    next(error)
+  } catch (err) {
+    console.error('ERROR in getLikedThoughts:', err)
+    return next(err)
   }
 }

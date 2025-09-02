@@ -1,7 +1,13 @@
+import mongoose from 'mongoose'
+
 import Thought from '../models/Thought.js'
 import { ThoughtsModel } from '../models/thoughtsModel.js'
 import * as thoughtsService from '../services/thoughtsService.js'
-import { AuthorizationError, NotFoundError, ValidationError } from '../utils/errors.js'
+import {
+  AuthorizationError,
+  NotFoundError,
+  ValidationError
+} from '../utils/errors.js'
 
 /**
  * THOUGHTS CONTROLLER
@@ -171,39 +177,100 @@ export const createThought = async (req, res, next) => {
 
 export const likeThought = async (req, res, next) => {
   try {
-    const { id } = req.params
-    // ✅ FIX: Use correct field name
-    const userId = req.isAuthenticated ? req.user.userId : null
+    const thoughtId = req.params.id
+    const thought = await Thought.findById(thoughtId)
 
-    const thought = await Thought.findById(id)
     if (!thought) {
-      throw new NotFoundError('Thought not found')
+      return res
+        .status(404)
+        .json({ success: false, message: 'Thought not found' })
     }
 
-    // For authenticated users: track specific users
-    if (userId) {
-      const alreadyLiked = thought.likes.some((id) => id.toString() === userId)
+    const userId = req.user?.userId // May be undefined for anonymous users
 
-      if (alreadyLiked) {
-        thought.likes = thought.likes.filter((id) => id.toString() !== userId)
-      } else {
-        thought.likes.push(userId)
+    console.log('LIKE REQUEST:', {
+      auth: req.headers.authorization ? 'Has auth header' : 'No auth header',
+      userId: req.user?.userId,
+      thoughtId: req.params.id,
+      action: req.body.action
+    })
+
+    if (userId) {
+      try {
+        // Convert userId to ObjectId before adding to likes array
+        const userObjectId = new mongoose.Types.ObjectId(userId)
+
+        // Check both ways - using either string comparison or ObjectId equality
+        const alreadyLiked = thought.likes.some(
+          (id) =>
+            id.toString() === userId ||
+            (id instanceof mongoose.Types.ObjectId && id.equals(userObjectId))
+        )
+
+        if (alreadyLiked) {
+          // Remove both string and ObjectId versions
+          thought.likes = thought.likes.filter(
+            (id) =>
+              id.toString() !== userId &&
+              !(
+                id instanceof mongoose.Types.ObjectId && id.equals(userObjectId)
+              )
+          )
+        } else {
+          // Add using ObjectId
+          thought.likes.push(userObjectId)
+        }
+
+        // Update heart count
+        thought.hearts = thought.likes.length
+
+        console.log('Thought likes after update:', {
+          likes: thought.likes.map((id) => id.toString()),
+          userId,
+          contains: thought.likes.some((id) => id.toString() === userId)
+        })
+      } catch (err) {
+        console.error('Error converting userId to ObjectId:', err)
+      }
+    } else {
+      // ANONYMOUS USER: Just toggle the heart count
+      // Option 1: Simple increment/decrement using client-side state
+      // We don't know if they've liked before, so rely on frontend to send current state
+      const action = req.body.action // "like" or "unlike"
+
+      if (action === 'like') {
+        thought.anonymousHearts = (thought.anonymousHearts || 0) + 1
+      } else if (action === 'unlike') {
+        thought.anonymousHearts = Math.max(
+          0,
+          (thought.anonymousHearts || 0) - 1
+        )
       }
 
-      thought.hearts = thought.likes.length
-    } else {
-      thought.hearts += 1
+      // Total hearts = authenticated likes + anonymous hearts
+      thought.hearts = thought.likes.length + (thought.anonymousHearts || 0)
     }
 
     await thought.save()
 
-    res.json({
-      success: true,
-      data: thought,
-      hearts: thought.hearts // ✅ Add hearts to response
+    console.log('AFTER LIKE:', {
+      userId,
+      likesArray: thought.likes.map((id) => id.toString()),
+      likesCount: thought.likes.length,
+      hearts: thought.hearts
     })
-  } catch (error) {
-    next(error)
+
+    return res.json({
+      success: true,
+      response: {
+        ...thought.toObject(),
+        isLikedByCurrentUser: userId
+          ? thought.likes.some((id) => id.toString() === userId)
+          : false
+      }
+    })
+  } catch (err) {
+    next(err)
   }
 }
 
@@ -249,7 +316,7 @@ export const deleteThought = async (req, res, next) => {
       })
     }
 
-    // ✅ FIX: Use the service layer (like other endpoints do)
+    // Use the service layer (like other endpoints do)
     await thoughtsService.deleteThought(id, userId)
 
     return res.status(200).json({
@@ -320,5 +387,45 @@ export const autoTagThoughts = async (req, res, next) => {
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export const getLikedThoughts = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId
+    console.log('GET LIKED THOUGHTS REQUEST:', { userId })
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      })
+    }
+
+    // Create ObjectId for MongoDB query
+    const objectId = new mongoose.Types.ObjectId(userId)
+
+    // Try this simpler query approach
+    const likedThoughts = await Thought.find({
+      likes: {
+        $in: [userId, objectId]
+      }
+    }).sort({ createdAt: -1 })
+
+    console.log(
+      `Found ${likedThoughts.length} liked thoughts for user ${userId}`
+    )
+
+    return res.json({
+      success: true,
+      response: likedThoughts,
+      message:
+        likedThoughts.length > 0
+          ? 'Liked thoughts were successfully fetched'
+          : ''
+    })
+  } catch (err) {
+    console.error('ERROR in getLikedThoughts:', err)
+    return next(err)
   }
 }

@@ -39,7 +39,7 @@ import Thought from './models/Thought.js'
 import { ThoughtsModel } from './models/thoughtsModel.js'
 import tagsRoutes from './routes/tagsRoutes.js'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
-import userRoutes from './routes/userRoutes.js'
+import userRoutes from './routes/userRoutes.js' // Note singular "user" not "users"
 import { ApiError } from './utils/errors.js'
 
 dotenv.config() // Load environment variables
@@ -54,17 +54,19 @@ const app = express()
 // Middleware
 app.use(express.json()) // Parse JSON request bodies
 
-app.use(
-  cors({
-    origin: [
-      'https://creative-hotteok-2e5655.netlify.app',
-      'http://localhost:5173'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  })
-)
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'https://creative-hotteok-2e5655.netlify.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
+}
+
+app.use(cors(corsOptions))
+// Ensure preflight responses are handled
+app.options('*', cors(corsOptions))
 
 // Enable request logging in development
 if (process.env.NODE_ENV !== 'production') {
@@ -93,7 +95,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/thoughts', thoughtsRoutes)
 app.use('/tags', tagsRoutes)
-app.use('/users', userRoutes)
+app.use('/users', userRoutes) // Should be at /users path
 
 // API documentation endpoint
 app.get('/', (req, res) => {
