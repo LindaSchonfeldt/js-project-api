@@ -1,3 +1,10 @@
+import Thought from './models/Thought.js'
+import { ThoughtsModel } from './models/thoughtsModel.js'
+import tagsRoutes from './routes/tagsRoutes.js'
+import thoughtsRoutes from './routes/thoughtsRoutes.js'
+import userRoutes from './routes/userRoutes.js'
+// Note singular "user" not "users"
+import { ApiError } from './utils/errors.js'
 /**
  * Express Server Entry Point
  * Purpose: Initializes and configures the API server for Happy Thoughts.
@@ -12,16 +19,6 @@ import express from 'express'
 import listEndpoints from 'express-list-endpoints'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
-
-import Thought from './models/Thought.js'
-import { ThoughtsModel } from './models/thoughtsModel.js'
-import tagsRoutes from './routes/tagsRoutes.js'
-import thoughtsRoutes from './routes/thoughtsRoutes.js'
-import userRoutes from './routes/userRoutes.js'
-// Note singular "user" not "users"
-import { ApiError } from './utils/errors.js'
-
-dotenv.config() // Load environment variables
 
 const mongoURL =
   process.env.MONGO_URL || 'mongodb://localhost:27017/happy-thoughts'
