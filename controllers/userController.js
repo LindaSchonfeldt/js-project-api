@@ -1,3 +1,10 @@
+/**
+ * User Controller
+ * Purpose: Handles business logic for user authentication and profile management.
+ * Usage: Used by routes to process user-related requests.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
+ */
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 

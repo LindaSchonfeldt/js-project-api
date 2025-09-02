@@ -1,12 +1,21 @@
+/**
+ * User Routes
+ * Purpose: Defines Express routes for user-related API endpoints.
+ * Usage: Imported by server.js to handle user requests.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
+ */
+
 import express from 'express'
-import { authenticateUser } from '../middleware/auth.js'
+
 import { getLikedThoughts } from '../controllers/thoughtsController.js'
-import { loginUser, registerUser } from '../controllers/userController.js'
 import {
   createThought,
   deleteThought,
   updateThought
 } from '../controllers/thoughtsController.js'
+import { loginUser, registerUser } from '../controllers/userController.js'
+import { authenticateUser } from '../middleware/auth.js'
 
 const router = express.Router()
 

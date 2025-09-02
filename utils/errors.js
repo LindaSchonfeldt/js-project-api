@@ -1,36 +1,9 @@
 /**
- * CUSTOM ERROR CLASSES
- *
- * Specialized error types and utilities for the Happy Thoughts API
- *
- * These custom error classes help standardize error handling across the application,
- * enable cleaner controller code with better error information, and provide
- * consistent API responses for different error scenarios.
- *
- * Error Types:
- * - ApiError: Base error class with HTTP status codes
- * - NotFoundError: For missing resources (404)
- * - ValidationError: For input validation failures (400)
- * - DatabaseError: For database operation failures (500)
- * - AuthenticationError: For authentication failures (401)
- *
- * Features:
- * - Consistent error response formatting
- * - HTTP status code integration
- * - Public vs internal error message separation
- * - JSON serialization support
- * - Error logging and debugging information
- *
- * Architecture: MVC Pattern with Service Layer
- * - Routes: URL mapping and route definitions
- * - Controllers: HTTP request/response handling
- * - Services: Business logic and data orchestration
- * - Models: Data access (supports both file and MongoDB storage)
- * - Utils: Shared utilities and error handling ← YOU ARE HERE
- *  * @author Linda Schönfeldt
- * @version 1.0.0
- * @created June 2025
- * @updated June 2025
+ * Error Utilities
+ * Purpose: Defines custom error classes and helpers for error handling.
+ * Usage: Imported by controllers/services for consistent error management.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
  */
 
 export class ApiError extends Error {

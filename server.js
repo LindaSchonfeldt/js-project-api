@@ -1,31 +1,9 @@
 /**
- * HAPPY THOUGHTS API SERVER
- *
- * Main Express.js server for the Happy Thoughts API
- *
- * A RESTful API for managing happy thoughts with automatic tagging,
- * pagination, and social features. Features intelligent content analysis
- * that automatically categorizes thoughts into relevant tags.
- *
- * Key Features:
- * - ✨ Automatic tag generation based on content analysis
- * - 📄 Pagination support for efficient data loading
- * - 💖 Social interactions with like/heart system
- * - 🏷️ Smart categorization into 10+ categories
- * - 📊 Trending system based on popularity
- * - 🔍 Tag-based filtering and search capabilities
- * - 💾 MongoDB integration for scalable data storage
- * - 🔄 Dual storage support (file-based and database)
- * * Architecture: MVC Pattern with Service Layer
- * - Routes: URL mapping and route definitions
- * - Controllers: HTTP request/response handling
- * - Services: Business logic and data orchestration
- * - Models: Data access (supports both file and MongoDB storage)
- *
- * @author Linda Schönfeldt
- * @version 1.0.0
- * @created June 2025
- * @updated June 2025
+ * Express Server Entry Point
+ * Purpose: Initializes and configures the API server for Happy Thoughts.
+ * Usage: Run with Node.js to start backend server.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
  */
 
 import cors from 'cors'
@@ -39,7 +17,8 @@ import Thought from './models/Thought.js'
 import { ThoughtsModel } from './models/thoughtsModel.js'
 import tagsRoutes from './routes/tagsRoutes.js'
 import thoughtsRoutes from './routes/thoughtsRoutes.js'
-import userRoutes from './routes/userRoutes.js' // Note singular "user" not "users"
+import userRoutes from './routes/userRoutes.js'
+// Note singular "user" not "users"
 import { ApiError } from './utils/errors.js'
 
 dotenv.config() // Load environment variables
@@ -54,6 +33,7 @@ const app = express()
 // Middleware
 app.use(express.json()) // Parse JSON request bodies
 
+// CORS configuration
 const corsOptions = {
   origin: [
     'http://localhost:5173',
@@ -95,7 +75,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/thoughts', thoughtsRoutes)
 app.use('/tags', tagsRoutes)
-app.use('/users', userRoutes) // Should be at /users path
+app.use('/users', userRoutes)
 
 // API documentation endpoint
 app.get('/', (req, res) => {
@@ -165,6 +145,7 @@ app.use((req, res) => {
   })
 })
 
+// Connect to MongoDB and start server
 mongoose
   .connect(mongoURL)
   .then(async () => {
@@ -222,10 +203,12 @@ mongoose
     })
   })
 
+// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error)
 })
 
+// Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })

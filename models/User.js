@@ -1,27 +1,9 @@
 /**
- * USER MODEL
- *
- * Mongoose schema and model definition for User entities
- *
- * This model defines the structure and validation rules for user data
- * in the Happy Thoughts API. Users can authenticate and manage their
- * thoughts through secure access tokens.
- *
- * Schema Features:
- * - User identification with unique names
- * - Secure password storage
- * - Automatic access token generation for authentication
- * - Cryptographically secure token creation
- *
- * Architecture: MVC Pattern with Service Layer
- * - Routes: URL mapping and route definitions
- * - Controllers: HTTP request/response handling
- * - Services: Business logic and data orchestration
- * - Models: Data access (supports both file and MongoDB storage) ← YOU ARE HERE
- * * @author Linda Schönfeldt
- * @version 1.0.0
- * @created June 2025
- * @updated June 2025
+ * User Model (Mongoose)
+ * Purpose: Defines the schema and model for User documents in MongoDB.
+ * Usage: Imported by controllers/services to interact with users collection.
+ * Author: Linda Schonfeldt
+ * Last Updated: June, 2025
  */
 
 import bcrypt from 'bcrypt'

@@ -1,3 +1,17 @@
+/**
+ * Thoughts Controller
+ * Purpose: Handles business logic for thoughts (CRUD, likes, etc.).
+ * Usage: Used by routes to process requests and interact with models/services.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
+/**
+ * Thoughts Controller
+ * Purpose: Handles business logic for thoughts (CRUD, likes, etc.).
+ * Usage: Used by routes to process requests and interact with models/services.
+ * Author: Linda Schonfeldt
+ * Last Updated: September 2, 2025
+ */
+
 import mongoose from 'mongoose'
 
 import Thought from '../models/Thought.js'
@@ -9,57 +23,12 @@ import {
   ValidationError
 } from '../utils/errors.js'
 
-/**
- * THOUGHTS CONTROLLER
- *
- * HTTP Request/Response Handler for Happy Thoughts API
- *
- * This controller handles all HTTP-related operations for thoughts endpoints,
- * including request parsing, response formatting, and comprehensive error handling.
- * Acts as the bridge between HTTP requests and business logic services.
- *
- * Responsibilities:
- * - Parse and validate HTTP requests (query params, body, headers)
- * - Validate request format and perform basic input sanitization
- * - Call appropriate service methods for business logic
- * - Format HTTP responses with proper status codes and structure
- * - Handle and format errors consistently across all endpoints
- * - Manage HTTP-specific concerns (caching, CORS, pagination)
- * - Implement request logging and performance monitoring
- *
- * Available Endpoints:
- * - GET    /thoughts           - Get paginated thoughts with filtering options
- * - GET    /thoughts/:id       - Get specific thought by unique ID
- * - POST   /thoughts           - Create new thought with auto-tagging
- * - POST   /thoughts/:id/like  - Increment hearts count (social feature)
- * - DELETE /thoughts/:id       - Remove thought permanently
- * - GET    /thoughts/trending  - Get popular thoughts sorted by hearts
- * - GET    /thoughts/tag/:tag  - Get thoughts filtered by specific tag
- * - GET    /tags               - Get all available tags with usage stats
- * - POST   /thoughts/auto-tag  - Bulk auto-tag existing thoughts
- *
- * Error Handling:
- * - 400 Bad Request - Invalid input format or validation failures
- * - 404 Not Found - Resource doesn't exist or invalid ID
- * - 500 Server Error - Unexpected errors and system failures
- *
- * Architecture: MVC Pattern with Service Layer
- * - Routes: URL mapping and route definitions
- * - Controllers: HTTP request/response handling ← YOU ARE HERE
- * - Services: Business logic and data orchestration
- * - Models: Data access (supports both file and MongoDB storage)
- * * @author Linda Schönfeldt
- * @version 1.0.0
- * @created June 2025
- * @updated June 2025
- */
-
 export const getAllThoughts = async (req, res, next) => {
   const page = parseInt(req.query.page, 10) || 1
   const limit = parseInt(req.query.limit, 10) || 10
 
   try {
-    // ✅ FIX: Populate user data to get username
+    // Populate user data to get username
     const { thoughts, totalPages } = await thoughtsService.getPaginatedThoughts(
       page,
       limit,
