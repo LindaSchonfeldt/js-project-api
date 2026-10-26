@@ -142,7 +142,13 @@ app.use((req, res) => {
   })
 })
 
-// Connect to MongoDB and start server
+// Start server immediately so the host detects the open port,
+// independent of how long the database connection takes
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${port}`)
+})
+
+// Connect to MongoDB
 mongoose
   .connect(mongoURL)
   .then(async () => {
@@ -182,22 +188,10 @@ mongoose
     } else {
       console.log(`Database contains ${count} thoughts, skipping migration`)
     }
-
-    // Start server last
-    const PORT = process.env.PORT || 8080
-
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on http://localhost:${PORT}`)
-    })
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err)
-    // Still start server even if DB connection fails
-    app.listen(port, () => {
-      console.log(
-        `Server running in file-based mode on http://localhost:${port}`
-      )
-    })
+    console.log('Running in file-based mode')
   })
 
 // Handle uncaught exceptions
