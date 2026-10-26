@@ -3,7 +3,7 @@
  * Purpose: Defines Express routes for user-related API endpoints.
  * Usage: Imported by server.js to handle user requests.
  * Author: Linda Schonfeldt
- * Last Updated: September 2, 2025
+ * Last Updated: October 26, 2026
  */
 
 import express from 'express'

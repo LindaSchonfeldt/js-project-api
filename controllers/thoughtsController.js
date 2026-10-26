@@ -3,13 +3,7 @@
  * Purpose: Handles business logic for thoughts (CRUD, likes, etc.).
  * Usage: Used by routes to process requests and interact with models/services.
  * Author: Linda Schonfeldt
- * Last Updated: September 2, 2025
-/**
- * Thoughts Controller
- * Purpose: Handles business logic for thoughts (CRUD, likes, etc.).
- * Usage: Used by routes to process requests and interact with models/services.
- * Author: Linda Schonfeldt
- * Last Updated: September 2, 2025
+ * Last Updated: October 26, 2026
  */
 
 import mongoose from 'mongoose'
