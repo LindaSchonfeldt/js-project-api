@@ -359,6 +359,64 @@ export const autoTagThoughts = async (req, res, next) => {
   }
 }
 
+export const getUserThoughts = async (req, res, next) => {
+  const page = parseInt(req.query.page, 10) || 1
+  const limit = parseInt(req.query.limit, 10) || 10
+
+  try {
+    const userId = req.user?.userId
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      })
+    }
+
+    const filter = { user: new mongoose.Types.ObjectId(userId) }
+    const [thoughts, total] = await Promise.all([
+      Thought.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate('user', 'username'),
+      Thought.countDocuments(filter)
+    ])
+    const tagger = new ThoughtsModel(false)
+
+    const payload = thoughts.map((doc) => {
+      const t = doc.toObject()
+
+      if (!t.themeTags?.length) {
+        t.themeTags = t.tags?.length
+          ? [...t.tags]
+          : tagger.identifyTags(t.message)
+      }
+
+      t.userId = userId
+      t.username = t.user?.username || null
+      delete t.user
+
+      return t
+    })
+
+    return res.status(200).json({
+      success: true,
+      response: {
+        thoughts: payload,
+        pagination: {
+          current: page,
+          pages: Math.max(1, Math.ceil(total / limit)),
+          total
+        }
+      },
+      message: 'User thoughts were successfully fetched'
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
 export const getLikedThoughts = async (req, res, next) => {
   try {
     const userId = req.user?.userId

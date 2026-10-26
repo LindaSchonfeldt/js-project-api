@@ -8,7 +8,7 @@
 
 import express from 'express'
 
-import { getLikedThoughts } from '../controllers/thoughtsController.js'
+import { getLikedThoughts, getUserThoughts } from '../controllers/thoughtsController.js'
 import { createThought, deleteThought, updateThought } from '../controllers/thoughtsController.js'
 import { loginUser, registerUser } from '../controllers/userController.js'
 import { authenticateUser } from '../middleware/auth.js'
@@ -23,6 +23,7 @@ router.post('/signup', registerUser)
 router.get('/liked-thoughts', authenticateUser, getLikedThoughts)
 
 // Thoughts routes under /users/thoughts (authentication required)
+router.get('/thoughts', authenticateUser, getUserThoughts)
 router.post('/thoughts', authenticateUser, createThought)
 router.put('/:id', authenticateUser, updateThought)
 router.delete('/:id', authenticateUser, deleteThought)
